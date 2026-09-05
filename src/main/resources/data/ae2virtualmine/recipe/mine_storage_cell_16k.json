@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "ae2virtualmine:mine_cell_housing"
+    },
+    {
+      "item": "ae2virtualmine:mine_cell_component_16k"
+    }
+  ],
+  "result": {
+    "id": "ae2virtualmine:mine_storage_cell_16k",
+    "count": 1
+  }
+}

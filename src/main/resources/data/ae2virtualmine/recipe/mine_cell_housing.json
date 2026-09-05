@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GRG",
+    "RPR",
+    "III"
+  ],
+  "key": {
+    "G": {
+      "item": "ae2:quartz_glass"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "minecraft:iron_pickaxe"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "id": "ae2virtualmine:mine_cell_housing",
+    "count": 1
+  }
+}

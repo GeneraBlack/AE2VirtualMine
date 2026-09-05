@@ -1,0 +1,24 @@
+{
+  "itemGroup.ae2virtualmine": "AE2 Virtual Mine",
+
+  "item.ae2virtualmine.mine_cell_housing": "Virtuelles Minenzellen-Gehäuse",
+  "item.ae2virtualmine.mine_cell_component_1k": "1k Minen-Speicherkomponente",
+  "item.ae2virtualmine.mine_cell_component_4k": "4k Minen-Speicherkomponente",
+  "item.ae2virtualmine.mine_cell_component_16k": "16k Minen-Speicherkomponente",
+  "item.ae2virtualmine.mine_cell_component_64k": "64k Minen-Speicherkomponente",
+  "item.ae2virtualmine.mine_cell_component_256k": "256k Minen-Speicherkomponente",
+
+  "item.ae2virtualmine.mine_storage_cell_1k": "1k Virtuelle Minenzelle",
+  "item.ae2virtualmine.mine_storage_cell_4k": "4k Virtuelle Minenzelle",
+  "item.ae2virtualmine.mine_storage_cell_16k": "16k Virtuelle Minenzelle",
+  "item.ae2virtualmine.mine_storage_cell_64k": "64k Virtuelle Minenzelle",
+  "item.ae2virtualmine.mine_storage_cell_256k": "256k Virtuelle Minenzelle",
+
+  "tooltip.ae2virtualmine.tier": "Stufe: %s",
+  "tooltip.ae2virtualmine.production": "Erzeugt %s Drops alle %s Sekunden",
+  "tooltip.ae2virtualmine.configured_target": "Eingestellter Rohstoff / Ader: %s",
+  "tooltip.ae2virtualmine.not_configured": "Kein Erz oder Gestein konfiguriert! In Elementwerkbank oder per Sneak+Rechtsklick mit Rohstoff konfigurieren.",
+
+  "message.ae2virtualmine.configured": "Minenzelle konfiguriert für: %s",
+  "message.ae2virtualmine.cleared": "Minenkonfiguration gelöscht."
+}

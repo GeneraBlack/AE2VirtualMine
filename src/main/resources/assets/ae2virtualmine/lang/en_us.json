@@ -1,0 +1,24 @@
+{
+  "itemGroup.ae2virtualmine": "AE2 Virtual Mine",
+
+  "item.ae2virtualmine.mine_cell_housing": "Virtual Mine Cell Housing",
+  "item.ae2virtualmine.mine_cell_component_1k": "1k Mine Storage Component",
+  "item.ae2virtualmine.mine_cell_component_4k": "4k Mine Storage Component",
+  "item.ae2virtualmine.mine_cell_component_16k": "16k Mine Storage Component",
+  "item.ae2virtualmine.mine_cell_component_64k": "64k Mine Storage Component",
+  "item.ae2virtualmine.mine_cell_component_256k": "256k Mine Storage Component",
+
+  "item.ae2virtualmine.mine_storage_cell_1k": "1k Virtual Mine Storage Cell",
+  "item.ae2virtualmine.mine_storage_cell_4k": "4k Virtual Mine Storage Cell",
+  "item.ae2virtualmine.mine_storage_cell_16k": "16k Virtual Mine Storage Cell",
+  "item.ae2virtualmine.mine_storage_cell_64k": "64k Virtual Mine Storage Cell",
+  "item.ae2virtualmine.mine_storage_cell_256k": "256k Virtual Mine Storage Cell",
+
+  "tooltip.ae2virtualmine.tier": "Tier: %s",
+  "tooltip.ae2virtualmine.production": "Produces %s drops every %s seconds",
+  "tooltip.ae2virtualmine.configured_target": "Configured Deposit / Target: %s",
+  "tooltip.ae2virtualmine.not_configured": "No ore or stone configured! Configure via Cell Workbench or Sneak+Right-Click with raw ore or stone.",
+
+  "message.ae2virtualmine.configured": "Configured mining cell for: %s",
+  "message.ae2virtualmine.cleared": "Cleared mining cell configuration."
+}

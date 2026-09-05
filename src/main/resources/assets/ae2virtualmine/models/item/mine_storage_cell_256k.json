@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "ae2virtualmine:item/mine_storage_cell_256k"
+  }
+}

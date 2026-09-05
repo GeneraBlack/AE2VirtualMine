@@ -1,0 +1,27 @@
+{
+  "type": "ae2virtualmine:mine_drop",
+  "target": {
+    "item": "minecraft:nether_star"
+  },
+  "min_tier": 4,
+  "drops": [
+    {
+      "item": {
+        "id": "minecraft:diamond",
+        "count": 1
+      },
+      "weight": 60,
+      "min_count": 2,
+      "max_count": 4
+    },
+    {
+      "item": {
+        "id": "minecraft:ancient_debris",
+        "count": 1
+      },
+      "weight": 40,
+      "min_count": 1,
+      "max_count": 2
+    }
+  ]
+}
