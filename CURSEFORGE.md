@@ -1,178 +1,75 @@
-# AE2 Virtual Mine
+# ⛏️ AE2 Virtual Mine
 
-<div align="center">
-  <img src="logo.png" alt="AE2 Virtual Mine Logo" width="200" height="200" />
+**Bring virtual mining, digital quarrying, and automated ore extraction directly into your Applied Energistics 2 ME Network!**
 
-  **Virtual Mining & Resource Generation inside your ME Network for Minecraft 1.21.1 (NeoForge)**
-
-  [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-brightgreen.svg)](https://minecraft.net/)
-  [![NeoForge](https://img.shields.io/badge/NeoForge-21.1.x-orange.svg)](https://neoforged.net/)
-  [![Applied Energistics 2](https://img.shields.io/badge/Applied%20Energistics%202-19.2.x-blue.svg)](https://appliedenergistics.org/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-</div>
+Requires **Applied Energistics 2** and **NeoForge (Minecraft 1.21.1)**.
 
 ---
 
-## ⛏️ About
+### 🌟 What is AE2 Virtual Mine?
 
-**AE2 Virtual Mine** is an official-style companion mod for **Applied Energistics 2** on **Minecraft 1.21.1 (NeoForge)**. It bridges digital ME network storage and virtual resource mining by introducing generative **Virtual Mine Storage Cells**.
+**AE2 Virtual Mine** introduces generative **Virtual Mine Storage Cells** to Applied Energistics 2. Instead of building massive, lag-inducing chunk-eating quarries or complicated void-miner contraptions, you can now virtualize mineral mining and ore extraction straight inside your ME Drives or ME Chests!
 
-Insert a configured Mining Cell into any standard **ME Drive** or **ME Chest**, supply AE power, and watch it generate real ores, raw metals, minerals, gems, and quarry stone byproducts directly into the cell every 3 seconds (60 ticks)!
-
----
-
-## ✨ Features
-
-- 📦 **5 Tiers of Virtual Mine Cells:** 1k, 4k, 16k, 64k, and 256k storage cells.
-- ⚡ **Scaled Production Rates:** Drops per cycle scale with cell tier (1 up to 256 drops every 3 seconds).
-- 🛑 **Zero Network Flooding & Smart Auto-Stop:**
-  - Drops are generated **strictly** into the mining cell itself.
-  - When the cell reaches full capacity (`CellState.FULL` or byte/type limits), production completely halts.
-  - No drops ever spill over into other cells in your ME network!
-- 🔋 **Zero Power Waste on Overflow:** When a cell is full, zero AE power is drained for unproduced drops.
-- 💎 **Full Vanilla Ore & Stone Coverage Out of the Box:**
-  - **Metals & Minerals:** Raw Iron, Raw Copper, Raw Gold, Coal, Redstone, Lapis Lazuli, Diamond, Emerald, Ancient Debris (Netherite), Nether Quartz, Amethyst Shards, Glowstone Dust.
-  - **Quarry & Stones:** Cobblestone, Stone, Deepslate, Cobbled Deepslate, Granite, Diorite, Andesite, Tuff, Calcite, Dripstone, Obsidian, Crying Obsidian, Netherrack, Basalt, Blackstone, End Stone, Sand, Red Sand, Gravel, Flint, Clay.
-- 🔍 **Automated Modded Ore & Material Discovery:**
-  - Automatically detects common NeoForge ore tags (`#c:ores`, `#c:raw_materials`, `#c:gems`, `#c:dusts`, `#c:stones`) and block types.
-  - Generates the modded raw resource along with realistic mining byproducts (Cobblestone / Cobbled Deepslate) without manual configuration.
-- 📋 **Datapack Extensible:** Create or customize mining drop tables via standard JSON datapacks using recipe type `ae2virtualmine:mine_drop`.
-- 🛠️ **Two Configuration Methods:**
-  - **Cell Workbench (AE2 native):** Put the cell in a Cell Workbench and configure the partition filter slot with your desired ore, raw material, or stone block.
-  - **In-Hand Quick Config:** Hold the mining cell in your main hand and the ore/raw resource in your offhand, then **Sneak + Right-Click** to configure instantly! (Sneak + Right-Click with empty offhand resets the cell).
-- 📊 **Native AE2 Tooltips:** Displays byte and type usage with color coding (Green → Orange → Red), upgrade cards, and visual item preview icons with amounts.
+Simply partition a Mining Cell with any raw ore, metal, mineral, or stone type, insert it into a powered ME Drive, and the cell will passively extract real ores and mining byproducts on a regular schedule.
 
 ---
 
-## 📊 Cell Tiers & Rates
+### ✨ Key Features
 
-By default, drop cycles occur every **60 ticks (3.0 seconds)**:
-
-| Tier | Capacity | Drop Yield | Generation Rate | Idle Power Drain |
-| :--- | :--- | :--- | :--- | :--- |
-| **1k Virtual Mine Cell** | 1,024 Bytes | **1 Drop** | 1 drop / 3.0s | 0.5 AE/t |
-| **4k Virtual Mine Cell** | 4,096 Bytes | **4 Drops** | 4 drops / 3.0s | 1.0 AE/t |
-| **16k Virtual Mine Cell** | 16,384 Bytes | **16 Drops** | 16 drops / 3.0s | 2.0 AE/t |
-| **64k Virtual Mine Cell** | 65,536 Bytes | **64 Drops** | 64 drops / 3.0s | 4.0 AE/t |
-| **256k Virtual Mine Cell** | 262,144 Bytes | **256 Drops** | 256 drops / 3.0s | 8.0 AE/t |
-
-*All drop counts, tick intervals, and AE energy costs (default: 10.0 AE per drop) are fully customizable in `config/ae2virtualmine-common.toml`.*
-
----
-
-## 🔨 Crafting Recipes
-
-### 1. Mine Cell Housing
-```
-[ Quartz Glass ] [ Redstone    ] [ Quartz Glass ]
-[ Redstone     ] [ Iron Pickaxe] [ Redstone     ]
-[ Iron Ingot   ] [ Iron Ingot  ] [ Iron Ingot   ]
-```
-
-### 2. 1k Mine Cell Component (Shapeless)
-- Combine **1x 1k ME Storage Component** + **1x Raw Iron** + **1x Coal**.
-
-### 3. Higher Tier Components (4k, 16k, 64k, 256k)
-Crafted following AE2's tier upgrade progression:
-- Combine 3x previous tier Mine Cell Components + 1x AE2 Calculation Processor + Quartz Glass + Redstone.
-
-### 4. Complete Storage Cells
-Shapeless recipe: Combine a **Mine Cell Housing** with any **Mine Cell Component**.
+* 📦 **5 Cell Tiers (1k to 256k):** Production scales with cell size.
+  * **1k Mine Cell:** 1 drop every 3 seconds (0.5 AE/t idle drain)
+  * **4k Mine Cell:** 4 drops every 3 seconds (1.0 AE/t idle drain)
+  * **16k Mine Cell:** 16 drops every 3 seconds (2.0 AE/t idle drain)
+  * **64k Mine Cell:** 64 drops every 3 seconds (4.0 AE/t idle drain)
+  * **256k Mine Cell:** 256 drops every 3 seconds (8.0 AE/t idle drain)
+* 🛑 **Zero Network Flooding (Smart Auto-Stop):**
+  * Generated items are placed **strictly** into the cell itself.
+  * Once the cell is full (byte or type capacity reached), the cell **automatically halts production**.
+  * Items will **never** overflow into other drives or storage cells in your ME network!
+* ⚡ **Zero Energy Waste:** If a cell is full, it consumes **zero AE energy** for drops until items are extracted from the cell.
+* 💎 **Full Vanilla Ore & Quarry Support (Out of the Box):**
+  * **Metals & Minerals:** Raw Iron (with cobblestone & gravel byproducts), Raw Copper (with granite), Raw Gold (with quartz/andesite), Nether Gold Ore (gold nuggets), Coal, Redstone, Lapis Lazuli, Diamond, Emerald, Ancient Debris (Netherite), Nether Quartz, Glowstone Dust, and Amethyst Shards (with calcite & basalt).
+  * **Quarry & Stones:** Cobblestone, Stone, Deepslate, Cobbled Deepslate, Granite, Diorite, Andesite, Tuff, Calcite, Dripstone, Obsidian, Crying Obsidian, Netherrack, Basalt, Blackstone, End Stone, Sand, Red Sand, Gravel, Flint, and Clay.
+* 🔍 **Automatic Modded Ore & Material Discovery:**
+  * Automatically detects modded ores and raw materials via common NeoForge tags (`#c:ores`, `#c:raw_materials`, `#c:gems`, `#c:dusts`, `#c:stones`).
+  * Yields the modded raw resource along with realistic quarry byproducts (Cobblestone or Cobbled Deepslate) without requiring manual configuration.
+* 🛠️ **Two Easy Configuration Methods:**
+  * **AE2 Cell Workbench:** Configure the ore or stone in the workbench partition filter.
+  * **In-Hand Fast Config:** Sneak + Right-Click with a raw ore or stone in your off-hand to set it immediately! (Sneak + Right-Click with an empty off-hand resets the cell).
+* 📊 **Authentic AE2 Tooltip:**
+  * Real-time byte & type usage ("*X of Y Bytes used*") with dynamic color feedback (Green → Orange → Red).
+  * Storage cell contents preview showing upgrade cards and item icons with amounts.
+* 📋 **Datapack Extensible:** Add custom mining deposits or customize drop tables via standard JSON recipes (`ae2virtualmine:mine_drop`).
 
 ---
 
-## ⚙️ Configuration
+### ⚙️ Configuration Options
 
-The configuration file is located at `config/ae2virtualmine-common.toml`:
-
-```toml
-[general]
-  # Base interval in ticks between virtual mining drop cycles (20 ticks = 1 second)
-  # Range: 1 ~ 72000 (Default: 60)
-  baseTickInterval = 60
-
-  # Whether virtual mining cells require AE energy from the network to produce drops
-  # Default: true
-  requireAeEnergy = true
-
-  # AE energy consumed per drop produced
-  # Range: 0.0 ~ 100000.0 (Default: 10.0)
-  energyPerDrop = 10.0
-
-[tiers]
-  # Drops produced per cycle by 1k Cell (Default: 1)
-  tier1kDrops = 1
-  # Drops produced per cycle by 4k Cell (Default: 4)
-  tier4kDrops = 4
-  # Drops produced per cycle by 16k Cell (Default: 16)
-  tier16kDrops = 16
-  # Drops produced per cycle by 64k Cell (Default: 64)
-  tier64kDrops = 64
-  # Drops produced per cycle by 256k Cell (Default: 256)
-  tier256kDrops = 256
-```
+All settings are easily configurable in `config/ae2virtualmine-common.toml`:
+* **Drop Interval:** Adjust the generation speed (default: 60 ticks / 3.0 seconds).
+* **AE Energy Drain:** Adjust or disable the AE power cost per drop (default: 10.0 AE).
+* **Drop Rates:** Configure how many items each cell tier yields per cycle.
 
 ---
 
-## 📜 Custom Datapack Drops
+### ❓ Frequently Asked Questions (FAQ)
 
-You can add custom drops or override existing drop tables using datapack JSON files in `data/<namespace>/recipe/<name>.json`:
+**Q: Can I use this mod in my modpack?**
+> **Yes, absolutely!** You are welcome to include AE2 Virtual Mine in any public or private modpack on CurseForge, Modrinth, or elsewhere.
 
-```json
-{
-  "type": "ae2virtualmine:mine_drop",
-  "target": {
-    "item": "minecraft:nether_star"
-  },
-  "min_tier": 4,
-  "drops": [
-    {
-      "item": {
-        "id": "minecraft:diamond",
-        "count": 1
-      },
-      "weight": 60,
-      "min_count": 2,
-      "max_count": 4
-    },
-    {
-      "item": {
-        "id": "minecraft:ancient_debris",
-        "count": 1
-      },
-      "weight": 40,
-      "min_count": 1,
-      "max_count": 2
-    }
-  ]
-}
-```
+**Q: Does it work with ME Chests as well as ME Drives?**
+> Yes! Virtual Mine Cells work in both standard ME Drives and ME Chests.
+
+**Q: What happens when the cell gets full?**
+> It stops producing completely. It will not waste energy, and it will not push excess items into other storage cells on the network. As soon as you withdraw items via an ME Terminal or export bus, production resumes automatically.
+
+**Q: How do I remove the configured deposit from a cell?**
+> You can clear it either in an AE2 Cell Workbench by removing the filter item, or by holding the cell in your main hand with an empty off-hand and pressing **Sneak + Right-Click**.
 
 ---
 
-## 📦 Requirements
+### 📦 Dependencies
 
-- **Minecraft:** `1.21.1`
-- **NeoForge:** `21.1.172+`
-- **Applied Energistics 2:** `19.2.10+`
-
----
-
-## 🛠️ Building From Source
-
-1. Clone repository:
-   ```bash
-   git clone https://github.com/GeneraBlack/AE2VirtualMine.git
-   cd AE2VirtualMine
-   ```
-2. Build with Gradle:
-   ```bash
-   ./gradlew build
-   ```
-3. The built JAR file will be located in `build/libs/ae2virtualmine-1.0.0.jar`.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**. Feel free to use this mod in any modpack!
+* **Minecraft 1.21.1**
+* **NeoForge 21.1.172+**
+* **Applied Energistics 2 (AE2) 19.2.10+**
