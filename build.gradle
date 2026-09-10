@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'net.neoforged.moddev' version '2.0.78'
+    id 'net.neoforged.moddev' version '2.0.146'
 }
 
 group = project.mod_group_id
@@ -12,7 +12,7 @@ base {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -34,10 +34,15 @@ repositories {
             includeGroup("curse.maven")
         }
     }
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+    }
 }
 
 dependencies {
-    implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
+    implementation "maven.modrinth:ae2:${project.ae2_version}"
+    implementation "maven.modrinth:guideme:26.1.12-beta"
 }
 
 neoForge {

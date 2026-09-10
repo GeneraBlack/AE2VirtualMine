@@ -3,7 +3,7 @@ package de.project.ae2virtualmine.recipe;
 import de.project.ae2virtualmine.registry.ModRecipes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
@@ -24,11 +24,11 @@ public class MineDropRegistry {
     private static final Map<Item, List<MineDropEntry>> DYNAMIC_CACHE = new HashMap<>();
 
     // Common NeoForge tags for mining resources
-    private static final TagKey<Item> C_ORES = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "ores"));
-    private static final TagKey<Item> C_RAW_MATERIALS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "raw_materials"));
-    private static final TagKey<Item> C_GEMS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "gems"));
-    private static final TagKey<Item> C_DUSTS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "dusts"));
-    private static final TagKey<Item> C_STONES = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "stones"));
+    private static final TagKey<Item> C_ORES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "ores"));
+    private static final TagKey<Item> C_RAW_MATERIALS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "raw_materials"));
+    private static final TagKey<Item> C_GEMS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "gems"));
+    private static final TagKey<Item> C_DUSTS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "dusts"));
+    private static final TagKey<Item> C_STONES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "stones"));
 
     static {
         registerOreDefaults();
@@ -218,9 +218,9 @@ public class MineDropRegistry {
         if (BUILTIN_DROPS.containsKey(item) || DYNAMIC_CACHE.containsKey(item)) {
             return true;
         }
-        if (level != null) {
+        if (level != null && level.getServer() != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(item));
-            if (level.getRecipeManager().getRecipeFor(ModRecipes.MINE_DROP_TYPE.get(), input, level).isPresent()) {
+            if (level.getServer().getRecipeManager().getRecipeFor(ModRecipes.MINE_DROP_TYPE.get(), input, level).isPresent()) {
                 return true;
             }
         }
@@ -234,7 +234,7 @@ public class MineDropRegistry {
                 return true;
             }
         }
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
         String path = id.getPath();
         return path.contains("ore") || path.startsWith("raw_") || path.endsWith("_raw") || path.endsWith("_cluster") || path.endsWith("_shard");
     }
@@ -249,9 +249,9 @@ public class MineDropRegistry {
         }
 
         // 1. Check datapack custom recipes
-        if (level != null) {
+        if (level != null && level.getServer() != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(target));
-            Optional<RecipeHolder<MineDropRecipe>> match = level.getRecipeManager().getRecipeFor(
+            Optional<RecipeHolder<MineDropRecipe>> match = level.getServer().getRecipeManager().getRecipeFor(
                     ModRecipes.MINE_DROP_TYPE.get(),
                     input,
                     level
@@ -265,7 +265,7 @@ public class MineDropRegistry {
 
         // 2. Dynamic generation for modded ores or raw materials
         ItemStack targetStack = new ItemStack(target);
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(target);
+        Identifier id = BuiltInRegistries.ITEM.getKey(target);
         String path = id.getPath();
 
         boolean isDeepslateOre = path.contains("deepslate");
@@ -302,7 +302,7 @@ public class MineDropRegistry {
                 if (entry.maxCount() > entry.minCount()) {
                     count += random.nextInt(entry.maxCount() - entry.minCount() + 1);
                 }
-                ItemStack result = entry.item().copy();
+                ItemStack result = entry.createStack();
                 result.setCount(count);
                 return result;
             }

@@ -18,7 +18,7 @@ on:
       changelog:
         description: "Changelog text"
         required: false
-        default: "Initial release of AE2 Virtual Mine for Minecraft 1.21.1 (NeoForge)."
+        default: "Release of AE2 Virtual Mine for Minecraft 26.1.2 (NeoForge)."
         type: string
 
 jobs:
@@ -34,10 +34,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Java 21
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'gradle'
 
@@ -77,11 +77,11 @@ jobs:
           name: "AE2 Virtual Mine ${{ steps.version_info.outputs.tag }}"
           version: ${{ steps.version_info.outputs.tag }}
           version-type: ${{ inputs.version_type || 'release' }}
-          changelog: ${{ inputs.changelog || 'See GitHub commit history for release notes.' }}
+          changelog: ${{ inputs.changelog || 'Release of AE2 Virtual Mine for Minecraft 26.1.2 (NeoForge).' }}
 
           # Compatibility matrix
           game-versions: |
-            1.21.1
+            26.1.2
           loaders: |
             neoforge
           dependencies: |
