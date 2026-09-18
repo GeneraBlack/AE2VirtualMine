@@ -83,7 +83,7 @@ jobs:
           name: "AE2 Virtual Mine ${{ steps.version_info.outputs.tag }}"
           version: ${{ steps.version_info.outputs.tag }}
           version-type: ${{ inputs.version_type || 'release' }}
-          changelog: ${{ inputs.changelog || 'AE2 Virtual Mine v1.0.2: Prioritize custom datapack recipes over hardcoded defaults, enforce recipe min_tier, and add cell stats configuration.' }}
+          changelog: "${{ inputs.changelog || 'AE2 Virtual Mine v1.0.2 - Custom datapack recipe priority and cell stats configuration.' }}"
 
           # Compatibility matrix
           game-versions: |
