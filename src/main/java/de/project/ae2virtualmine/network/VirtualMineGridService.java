@@ -89,7 +89,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
             return false;
         }
 
-        List<MineDropEntry> dropEntries = MineDropRegistry.getDropEntries(target, level);
+        List<MineDropEntry> dropEntries = MineDropRegistry.getDropEntries(target, level, mineCell.getTier());
         if (dropEntries.isEmpty()) {
             return false;
         }

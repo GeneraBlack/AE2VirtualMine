@@ -1,6 +1,9 @@
 package de.project.ae2virtualmine.recipe;
 
+import de.project.ae2virtualmine.cell.MineCellTier;
+import de.project.ae2virtualmine.config.VirtualMineConfig;
 import de.project.ae2virtualmine.registry.ModRecipes;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -215,40 +218,49 @@ public class MineDropRegistry {
     }
 
     public static boolean isValidMiningTarget(Item item, Level level) {
-        if (BUILTIN_DROPS.containsKey(item) || DYNAMIC_CACHE.containsKey(item)) {
-            return true;
-        }
+        // 1. Datapack custom recipes always have top priority
         if (level != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(item));
             if (level.getRecipeManager().getRecipeFor(ModRecipes.MINE_DROP_TYPE.get(), input, level).isPresent()) {
                 return true;
             }
         }
-        ItemStack stack = new ItemStack(item);
-        if (stack.is(C_ORES) || stack.is(C_RAW_MATERIALS) || stack.is(C_GEMS) || stack.is(C_DUSTS) || stack.is(C_STONES)) {
+
+        // 2. Check dynamic cache (modded items that were already matched)
+        if (DYNAMIC_CACHE.containsKey(item)) {
             return true;
         }
-        if (item instanceof BlockItem blockItem) {
-            Block block = blockItem.getBlock();
-            if (block instanceof DropExperienceBlock) {
+
+        // 3. Builtin drops and tag recognition (if enabled in config)
+        boolean builtinEnabled = !VirtualMineConfig.SPEC.isLoaded() || VirtualMineConfig.ENABLE_BUILTIN_DROPS.get();
+        if (builtinEnabled) {
+            if (BUILTIN_DROPS.containsKey(item)) {
                 return true;
             }
+            ItemStack stack = new ItemStack(item);
+            if (stack.is(C_ORES) || stack.is(C_RAW_MATERIALS) || stack.is(C_GEMS) || stack.is(C_DUSTS) || stack.is(C_STONES)) {
+                return true;
+            }
+            if (item instanceof BlockItem blockItem) {
+                Block block = blockItem.getBlock();
+                if (block instanceof DropExperienceBlock) {
+                    return true;
+                }
+            }
+            ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+            String path = id.getPath();
+            return path.contains("ore") || path.startsWith("raw_") || path.endsWith("_raw") || path.endsWith("_cluster") || path.endsWith("_shard");
         }
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
-        String path = id.getPath();
-        return path.contains("ore") || path.startsWith("raw_") || path.endsWith("_raw") || path.endsWith("_cluster") || path.endsWith("_shard");
+
+        return false;
     }
 
     public static List<MineDropEntry> getDropEntries(Item target, Level level) {
-        if (BUILTIN_DROPS.containsKey(target)) {
-            return BUILTIN_DROPS.get(target);
-        }
+        return getDropEntries(target, level, null);
+    }
 
-        if (DYNAMIC_CACHE.containsKey(target)) {
-            return DYNAMIC_CACHE.get(target);
-        }
-
-        // 1. Check datapack custom recipes
+    public static List<MineDropEntry> getDropEntries(Item target, Level level, @Nullable MineCellTier tier) {
+        // 1. Datapack custom recipes have TOP PRIORITY - custom configs overwrite hardcoded defaults
         if (level != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(target));
             Optional<RecipeHolder<MineDropRecipe>> match = level.getRecipeManager().getRecipeFor(
@@ -257,26 +269,45 @@ public class MineDropRegistry {
                     level
             );
             if (match.isPresent()) {
-                List<MineDropEntry> recipeDrops = match.get().value().drops();
-                DYNAMIC_CACHE.put(target, recipeDrops);
-                return recipeDrops;
+                MineDropRecipe recipe = match.get().value();
+                if (tier != null) {
+                    int cellTierNumber = tier.ordinal() + 1;
+                    if (cellTierNumber < recipe.minTier()) {
+                        return Collections.emptyList(); // Cell tier is too low for this custom recipe!
+                    }
+                }
+                return recipe.drops();
             }
         }
 
-        // 2. Dynamic generation for modded ores or raw materials
-        ItemStack targetStack = new ItemStack(target);
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(target);
-        String path = id.getPath();
+        // 2. Check dynamic cache (for auto-generated modded drops)
+        if (DYNAMIC_CACHE.containsKey(target)) {
+            return DYNAMIC_CACHE.get(target);
+        }
 
-        boolean isDeepslateOre = path.contains("deepslate");
-        ItemStack byproduct = isDeepslateOre ? new ItemStack(Items.COBBLED_DEEPSLATE) : new ItemStack(Items.COBBLESTONE);
+        // 3. Fallback to hardcoded built-in drops & tag-based generation (if enabled)
+        boolean builtinEnabled = !VirtualMineConfig.SPEC.isLoaded() || VirtualMineConfig.ENABLE_BUILTIN_DROPS.get();
+        if (builtinEnabled) {
+            if (BUILTIN_DROPS.containsKey(target)) {
+                return BUILTIN_DROPS.get(target);
+            }
 
-        List<MineDropEntry> generated = List.of(
-                new MineDropEntry(targetStack, 80, 1, 1),
-                new MineDropEntry(byproduct, 20, 1, 1)
-        );
-        DYNAMIC_CACHE.put(target, generated);
-        return generated;
+            ItemStack targetStack = new ItemStack(target);
+            ResourceLocation id = BuiltInRegistries.ITEM.getKey(target);
+            String path = id.getPath();
+
+            boolean isDeepslateOre = path.contains("deepslate");
+            ItemStack byproduct = isDeepslateOre ? new ItemStack(Items.COBBLED_DEEPSLATE) : new ItemStack(Items.COBBLESTONE);
+
+            List<MineDropEntry> generated = List.of(
+                    new MineDropEntry(targetStack, 80, 1, 1),
+                    new MineDropEntry(byproduct, 20, 1, 1)
+            );
+            DYNAMIC_CACHE.put(target, generated);
+            return generated;
+        }
+
+        return Collections.emptyList();
     }
 
     public static ItemStack rollDrop(List<MineDropEntry> entries, RandomSource random) {
