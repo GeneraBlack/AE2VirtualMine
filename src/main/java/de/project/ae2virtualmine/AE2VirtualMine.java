@@ -39,6 +39,11 @@ public class AE2VirtualMine {
 
         // Register Setup Listener
         modEventBus.addListener(this::commonSetup);
+
+        // Clear dynamic drop cache when tags/datapacks update
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.TagsUpdatedEvent event) -> {
+            de.project.ae2virtualmine.recipe.MineDropRegistry.clearCache();
+        });
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

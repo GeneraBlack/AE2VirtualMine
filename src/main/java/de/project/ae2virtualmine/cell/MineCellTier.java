@@ -28,28 +28,67 @@ public enum MineCellTier {
     }
 
     public int getTotalBytes() {
+        if (VirtualMineConfig.SPEC.isLoaded()) {
+            return switch (this) {
+                case TIER_1K -> VirtualMineConfig.TIER_1K_BYTES.get();
+                case TIER_4K -> VirtualMineConfig.TIER_4K_BYTES.get();
+                case TIER_16K -> VirtualMineConfig.TIER_16K_BYTES.get();
+                case TIER_64K -> VirtualMineConfig.TIER_64K_BYTES.get();
+                case TIER_256K -> VirtualMineConfig.TIER_256K_BYTES.get();
+            };
+        }
         return totalBytes;
     }
 
     public int getBytesPerType() {
+        if (VirtualMineConfig.SPEC.isLoaded()) {
+            return switch (this) {
+                case TIER_1K -> VirtualMineConfig.TIER_1K_BYTES_PER_TYPE.get();
+                case TIER_4K -> VirtualMineConfig.TIER_4K_BYTES_PER_TYPE.get();
+                case TIER_16K -> VirtualMineConfig.TIER_16K_BYTES_PER_TYPE.get();
+                case TIER_64K -> VirtualMineConfig.TIER_64K_BYTES_PER_TYPE.get();
+                case TIER_256K -> VirtualMineConfig.TIER_256K_BYTES_PER_TYPE.get();
+            };
+        }
         return bytesPerType;
     }
 
     public int getTotalTypes() {
+        if (VirtualMineConfig.SPEC.isLoaded()) {
+            return VirtualMineConfig.TOTAL_TYPES.get();
+        }
         return totalTypes;
     }
 
     public double getIdleDrain() {
+        if (VirtualMineConfig.SPEC.isLoaded()) {
+            return switch (this) {
+                case TIER_1K -> VirtualMineConfig.TIER_1K_IDLE_DRAIN.get();
+                case TIER_4K -> VirtualMineConfig.TIER_4K_IDLE_DRAIN.get();
+                case TIER_16K -> VirtualMineConfig.TIER_16K_IDLE_DRAIN.get();
+                case TIER_64K -> VirtualMineConfig.TIER_64K_IDLE_DRAIN.get();
+                case TIER_256K -> VirtualMineConfig.TIER_256K_IDLE_DRAIN.get();
+            };
+        }
         return idleDrain;
     }
 
     public int getDropCount() {
+        if (VirtualMineConfig.SPEC.isLoaded()) {
+            return switch (this) {
+                case TIER_1K -> VirtualMineConfig.TIER_1K_DROPS.get();
+                case TIER_4K -> VirtualMineConfig.TIER_4K_DROPS.get();
+                case TIER_16K -> VirtualMineConfig.TIER_16K_DROPS.get();
+                case TIER_64K -> VirtualMineConfig.TIER_64K_DROPS.get();
+                case TIER_256K -> VirtualMineConfig.TIER_256K_DROPS.get();
+            };
+        }
         return switch (this) {
-            case TIER_1K -> VirtualMineConfig.TIER_1K_DROPS.get();
-            case TIER_4K -> VirtualMineConfig.TIER_4K_DROPS.get();
-            case TIER_16K -> VirtualMineConfig.TIER_16K_DROPS.get();
-            case TIER_64K -> VirtualMineConfig.TIER_64K_DROPS.get();
-            case TIER_256K -> VirtualMineConfig.TIER_256K_DROPS.get();
+            case TIER_1K -> 1;
+            case TIER_4K -> 4;
+            case TIER_16K -> 16;
+            case TIER_64K -> 64;
+            case TIER_256K -> 256;
         };
     }
 }
