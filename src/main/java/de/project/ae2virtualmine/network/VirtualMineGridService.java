@@ -85,7 +85,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
         }
 
         Item target = mineCell.getConfiguredTarget();
-        if (target == null) {
+        if (target == null || !MineDropRegistry.isValidMiningTarget(target, level)) {
             return false;
         }
 

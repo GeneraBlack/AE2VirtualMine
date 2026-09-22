@@ -217,7 +217,23 @@ public class MineDropRegistry {
         BUILTIN_DROPS.put(target, drops);
     }
 
-    public static boolean isValidMiningTarget(Item item, Level level) {
+    public static boolean isOreOrMiningResource(Item item) {
+        ItemStack stack = new ItemStack(item);
+        if (stack.is(C_ORES) || stack.is(C_RAW_MATERIALS) || stack.is(C_GEMS) || stack.is(C_DUSTS) || stack.is(C_STONES)) {
+            return true;
+        }
+        if (item instanceof BlockItem blockItem) {
+            Block block = blockItem.getBlock();
+            if (block instanceof DropExperienceBlock) {
+                return true;
+            }
+        }
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        String path = id.getPath();
+        return path.contains("ore") || path.startsWith("raw_") || path.endsWith("_raw") || path.endsWith("_cluster") || path.endsWith("_shard");
+    }
+
+    public static boolean isValidMiningTarget(Item item, @Nullable Level level) {
         // 1. Datapack custom recipes always have top priority
         if (level != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(item));
@@ -226,30 +242,21 @@ public class MineDropRegistry {
             }
         }
 
-        // 2. Check dynamic cache (modded items that were already matched)
+        // 2. Check dynamic cache (modded items that were already verified)
         if (DYNAMIC_CACHE.containsKey(item)) {
             return true;
         }
 
-        // 3. Builtin drops and tag recognition (if enabled in config)
+        // 3. Builtin drops table (if enabled in config)
         boolean builtinEnabled = !VirtualMineConfig.SPEC.isLoaded() || VirtualMineConfig.ENABLE_BUILTIN_DROPS.get();
-        if (builtinEnabled) {
-            if (BUILTIN_DROPS.containsKey(item)) {
-                return true;
-            }
-            ItemStack stack = new ItemStack(item);
-            if (stack.is(C_ORES) || stack.is(C_RAW_MATERIALS) || stack.is(C_GEMS) || stack.is(C_DUSTS) || stack.is(C_STONES)) {
-                return true;
-            }
-            if (item instanceof BlockItem blockItem) {
-                Block block = blockItem.getBlock();
-                if (block instanceof DropExperienceBlock) {
-                    return true;
-                }
-            }
-            ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
-            String path = id.getPath();
-            return path.contains("ore") || path.startsWith("raw_") || path.endsWith("_raw") || path.endsWith("_cluster") || path.endsWith("_shard");
+        if (builtinEnabled && BUILTIN_DROPS.containsKey(item)) {
+            return true;
+        }
+
+        // 4. Dynamic fallback matching (only if enabled in config AND it is a genuine ore/mining resource)
+        boolean dynamicFallbackEnabled = !VirtualMineConfig.SPEC.isLoaded() || VirtualMineConfig.ENABLE_DYNAMIC_FALLBACK.get();
+        if (dynamicFallbackEnabled && isOreOrMiningResource(item)) {
+            return true;
         }
 
         return false;
@@ -259,7 +266,7 @@ public class MineDropRegistry {
         return getDropEntries(target, level, null);
     }
 
-    public static List<MineDropEntry> getDropEntries(Item target, Level level, @Nullable MineCellTier tier) {
+    public static List<MineDropEntry> getDropEntries(Item target, @Nullable Level level, @Nullable MineCellTier tier) {
         // 1. Datapack custom recipes have TOP PRIORITY - custom configs overwrite hardcoded defaults
         if (level != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(target));
@@ -285,13 +292,15 @@ public class MineDropRegistry {
             return DYNAMIC_CACHE.get(target);
         }
 
-        // 3. Fallback to hardcoded built-in drops & tag-based generation (if enabled)
+        // 3. Built-in drop tables (if enabled)
         boolean builtinEnabled = !VirtualMineConfig.SPEC.isLoaded() || VirtualMineConfig.ENABLE_BUILTIN_DROPS.get();
-        if (builtinEnabled) {
-            if (BUILTIN_DROPS.containsKey(target)) {
-                return BUILTIN_DROPS.get(target);
-            }
+        if (builtinEnabled && BUILTIN_DROPS.containsKey(target)) {
+            return BUILTIN_DROPS.get(target);
+        }
 
+        // 4. Dynamic fallback generation for modded ores (ONLY if enabled AND verified as a real ore/resource)
+        boolean dynamicFallbackEnabled = !VirtualMineConfig.SPEC.isLoaded() || VirtualMineConfig.ENABLE_DYNAMIC_FALLBACK.get();
+        if (dynamicFallbackEnabled && isOreOrMiningResource(target)) {
             ItemStack targetStack = new ItemStack(target);
             ResourceLocation id = BuiltInRegistries.ITEM.getKey(target);
             String path = id.getPath();
@@ -307,6 +316,7 @@ public class MineDropRegistry {
             return generated;
         }
 
+        // Unknown item or not an ore -> produce nothing
         return Collections.emptyList();
     }
 
