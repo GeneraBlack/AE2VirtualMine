@@ -9,6 +9,8 @@ public class VirtualMineConfig {
     public static final ModConfigSpec.DoubleValue ENERGY_PER_DROP;
     public static final ModConfigSpec.BooleanValue REQUIRE_AE_ENERGY;
     public static final ModConfigSpec.BooleanValue ENABLE_BUILTIN_DROPS;
+    public static final ModConfigSpec.BooleanValue ENABLE_DYNAMIC_FALLBACK;
+    public static final ModConfigSpec.BooleanValue ENFORCE_INVENTORY_CHECK;
 
     // Drop rates per tier
     public static final ModConfigSpec.IntValue TIER_1K_DROPS;
@@ -59,8 +61,16 @@ public class VirtualMineConfig {
                 .defineInRange("energyPerDrop", 10.0, 0.0, 100000.0);
 
         ENABLE_BUILTIN_DROPS = builder
-                .comment("Whether hardcoded built-in drop tables and modded ore tags should be used when no custom datapack recipe exists. If set to false, only datapack recipes will generate drops.")
+                .comment("Whether hardcoded built-in drop tables should be used when no custom datapack recipe exists. If set to false, only datapack recipes will generate drops.")
                 .define("enableBuiltinDrops", true);
+
+        ENABLE_DYNAMIC_FALLBACK = builder
+                .comment("Whether to enable automatic dynamic drop generation for modded ores and materials matching ore tags. If set to false, only explicit datapack recipes and hardcoded builtin drop tables are allowed.")
+                .define("enableDynamicFallback", true);
+
+        ENFORCE_INVENTORY_CHECK = builder
+                .comment("Whether configuring a Virtual Mine Cell (in Cell Workbench or via hand) requires the player to actually have the target item in their inventory. Prevents JEI ghost-dragging unearned items.")
+                .define("enforceInventoryCheck", true);
 
         builder.pop();
 

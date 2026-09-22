@@ -69,7 +69,50 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
 
     @Override
     public ConfigInventory getConfigInventory(ItemStack stack) {
-        return CellConfig.create(Set.of(AEKeyType.items()), stack);
+        var holder = new ConfigHolder(stack);
+        holder.inv = ConfigInventory.configTypes(63)
+                .supportedTypes(Set.of(AEKeyType.items()))
+                .slotFilter((slot, what) -> isKeyAllowedInConfig(what, stack))
+                .changeListener(holder::save)
+                .build();
+        holder.load();
+        return holder.inv;
+    }
+
+    private static boolean isKeyAllowedInConfig(appeng.api.stacks.AEKey what, ItemStack cellStack) {
+        if (!(what instanceof AEItemKey itemKey)) {
+            return false;
+        }
+        Item item = itemKey.getItem();
+        // 1. Must be a valid mining target
+        if (!MineDropRegistry.isValidMiningTarget(item, null)) {
+            return false;
+        }
+        // 2. Enforce inventory check if configured
+        if (VirtualMineConfig.SPEC.isLoaded() && VirtualMineConfig.ENFORCE_INVENTORY_CHECK.get()) {
+            Player player = de.project.ae2virtualmine.util.CellWorkbenchPlayerHelper.getCurrentPlayer(cellStack);
+            if (player != null && !de.project.ae2virtualmine.util.CellWorkbenchPlayerHelper.hasItemInInventory(player, item)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static class ConfigHolder {
+        private final ItemStack stack;
+        private ConfigInventory inv;
+
+        public ConfigHolder(ItemStack stack) {
+            this.stack = stack;
+        }
+
+        public void load() {
+            inv.readFromList(stack.getOrDefault(AEComponents.STORAGE_CELL_CONFIG_INV, List.of()));
+        }
+
+        public void save() {
+            stack.set(AEComponents.STORAGE_CELL_CONFIG_INV, inv.toList());
+        }
     }
 
     @Override
@@ -177,6 +220,11 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
             if (!otherStack.isEmpty()) {
                 // Quick-partition using item in off-hand
                 if (MineDropRegistry.isValidMiningTarget(otherStack.getItem(), level)) {
+                    if (VirtualMineConfig.SPEC.isLoaded() && VirtualMineConfig.ENFORCE_INVENTORY_CHECK.get()) {
+                        if (!de.project.ae2virtualmine.util.CellWorkbenchPlayerHelper.hasItemInInventory(player, otherStack.getItem())) {
+                            return InteractionResult.FAIL;
+                        }
+                    }
                     if (!level.isClientSide()) {
                         AEItemKey key = AEItemKey.of(otherStack.getItem());
                         stack.set(AEComponents.STORAGE_CELL_CONFIG_INV, List.of(new GenericStack(key, 1)));
