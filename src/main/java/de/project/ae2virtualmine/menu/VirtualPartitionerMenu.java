@@ -3,7 +3,7 @@ package de.project.ae2virtualmine.menu;
 import appeng.api.ids.AEComponents;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.GenericStack;
-import de.project.ae2virtualmine.cell.IVirtualMineCell;
+import de.project.ae2virtualmine.cell.VirtualMineCellItem;
 import de.project.ae2virtualmine.cell.partition.MineCellPartition;
 import de.project.ae2virtualmine.cell.partition.MineCellPartitionList;
 import de.project.ae2virtualmine.config.VirtualMineConfig;
@@ -53,7 +53,7 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
         this.addSlot(new Slot(container, 0, 16, 20) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.getItem() instanceof IVirtualMineCell;
+                return stack.getItem() instanceof VirtualMineCellItem;
             }
 
             @Override
@@ -102,7 +102,7 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
                 }
             } else {
                 // From inventory
-                if (stackInSlot.getItem() instanceof IVirtualMineCell) {
+                if (stackInSlot.getItem() instanceof VirtualMineCellItem) {
                     if (!this.moveItemStackTo(stackInSlot, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }
@@ -145,7 +145,7 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
             return;
         }
         ItemStack cellStack = cellSlot.getItem();
-        if (!(cellStack.getItem() instanceof IVirtualMineCell)) {
+        if (!(cellStack.getItem() instanceof VirtualMineCellItem)) {
             return;
         }
 

@@ -28,6 +28,7 @@
 
   "message.ae2virtualmine.configured": "Minenzelle konfiguriert für: %s",
   "message.ae2virtualmine.cleared": "Minenkonfiguration gelöscht.",
+  "message.ae2virtualmine.clear_blocked": "Löschen nicht möglich: Zelle enthält noch Gegenstände! Zuerst leeren.",
 
   "jei.ae2virtualmine.category.mining": "Virtueller Bergbau",
   "jei.ae2virtualmine.min_tier": "Benötigt: %s+ Minenzelle",

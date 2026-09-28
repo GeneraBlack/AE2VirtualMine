@@ -320,9 +320,25 @@ public class MineDropRegistry {
         return Collections.emptyList();
     }
 
+    /**
+     * Result of a weighted drop roll, including which entry index was selected.
+     */
+    public record RolledDrop(ItemStack stack, int entryIndex) {
+        public static final RolledDrop EMPTY = new RolledDrop(ItemStack.EMPTY, -1);
+
+        public boolean isSecondary() {
+            return entryIndex > 0;
+        }
+    }
+
     public static ItemStack rollDrop(List<MineDropEntry> entries, RandomSource random) {
+        RolledDrop result = rollDropWithIndex(entries, random);
+        return result.stack();
+    }
+
+    public static RolledDrop rollDropWithIndex(List<MineDropEntry> entries, RandomSource random) {
         if (entries == null || entries.isEmpty()) {
-            return ItemStack.EMPTY;
+            return RolledDrop.EMPTY;
         }
 
         int totalWeight = 0;
@@ -331,11 +347,12 @@ public class MineDropRegistry {
         }
 
         if (totalWeight <= 0) {
-            return ItemStack.EMPTY;
+            return RolledDrop.EMPTY;
         }
 
         int roll = random.nextInt(totalWeight);
         int current = 0;
+        int index = 0;
         for (MineDropEntry entry : entries) {
             current += entry.weight();
             if (roll < current) {
@@ -345,11 +362,12 @@ public class MineDropRegistry {
                 }
                 ItemStack result = entry.item().copy();
                 result.setCount(count);
-                return result;
+                return new RolledDrop(result, index);
             }
+            index++;
         }
 
-        return ItemStack.EMPTY;
+        return RolledDrop.EMPTY;
     }
 
     public static Map<Item, List<MineDropEntry>> getBuiltinDrops() {

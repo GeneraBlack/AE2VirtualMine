@@ -28,6 +28,7 @@
 
   "message.ae2virtualmine.configured": "Configured mining cell for: %s",
   "message.ae2virtualmine.cleared": "Cleared mining cell configuration.",
+  "message.ae2virtualmine.clear_blocked": "Cannot clear: cell still contains items! Empty it first.",
 
   "jei.ae2virtualmine.category.mining": "Virtual Mining",
   "jei.ae2virtualmine.min_tier": "Requires: %s+ Mine Cell",

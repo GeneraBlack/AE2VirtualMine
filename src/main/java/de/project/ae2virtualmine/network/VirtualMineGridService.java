@@ -31,7 +31,8 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
 
     private final IGrid grid;
     private int tickCounter = 0;
-    private final Map<IVirtualMineCell, Integer> cellProgress = new WeakHashMap<>();
+    // Track progress by cell ItemStack identity (System.identityHashCode) to avoid WeakHashMap GC issues
+    private final Map<Integer, Integer> cellProgress = new HashMap<>();
 
     public VirtualMineGridService(IGrid grid) {
         this.grid = grid;
@@ -94,12 +95,14 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
             default -> baseInterval;
         };
 
-        int progress = cellProgress.getOrDefault(mineCell, 0) + 5;
+        // Use ItemStack identity hash as stable key (survives cell wrapper re-creation)
+        int cellKey = System.identityHashCode(mineCell.getItemStack());
+        int progress = cellProgress.getOrDefault(cellKey, 0) + 5;
         if (progress >= targetInterval) {
-            cellProgress.put(mineCell, 0);
+            cellProgress.put(cellKey, 0);
             return processCell(mineCell, level, energyService, requireEnergy, random, speedCards, upgrades);
         } else {
-            cellProgress.put(mineCell, progress);
+            cellProgress.put(cellKey, progress);
             return false;
         }
     }
@@ -166,47 +169,42 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
                 continue;
             }
 
-            ItemStack dropStack = MineDropRegistry.rollDrop(dropEntries, random);
-            if (dropStack.isEmpty()) {
+            // BUG-05 FIX: Use rollDropWithIndex to correctly identify secondary drops by index
+            MineDropRegistry.RolledDrop rolledDrop = MineDropRegistry.rollDropWithIndex(dropEntries, random);
+            if (rolledDrop.stack().isEmpty()) {
                 continue;
-            }
-
-            // Check if this drop is a secondary byproduct
-            boolean isSecondary = false;
-            if (dropEntries.size() > 1) {
-                for (int s = 1; s < dropEntries.size(); s++) {
-                    if (ItemStack.isSameItem(dropStack, dropEntries.get(s).createStack())) {
-                        isSecondary = true;
-                        break;
-                    }
-                }
             }
 
             boolean voidThisSecondary = globalVoidSecondary || selectedPartition.voidSecondary();
 
-            if (voidThisSecondary && isSecondary) {
-                // Secondary output is voided!
+            // A drop is secondary if its entry index > 0 (not the primary drop)
+            if (voidThisSecondary && rolledDrop.isSecondary()) {
+                // Secondary output is voided — still costs energy
                 if (requireEnergy && energyPerDrop > 0) {
                     energyService.extractAEPower(energyPerDrop, Actionable.MODULATE, PowerMultiplier.CONFIG);
                 }
                 continue;
             }
 
-            AEItemKey key = AEItemKey.of(dropStack);
+            AEItemKey key = AEItemKey.of(rolledDrop.stack());
+            int dropCount = rolledDrop.stack().getCount();
 
             // Test if the cell has space to accept this item
-            long canInsert = mineCell.injectGeneratedDrop(key, dropStack.getCount(), Actionable.SIMULATE);
+            long canInsert = mineCell.injectGeneratedDrop(key, dropCount, Actionable.SIMULATE);
             if (canInsert <= 0) {
                 continue;
             }
 
+            // BUG-08 FIX: Scale energy proportionally to actual insertion amount
+            double scaledEnergy = (canInsert < dropCount) ? energyPerDrop * ((double) canInsert / dropCount) : energyPerDrop;
+
             // Only consume AE power if the item actually fits into the cell
-            if (requireEnergy && energyPerDrop > 0) {
-                double extracted = energyService.extractAEPower(energyPerDrop, Actionable.SIMULATE, PowerMultiplier.CONFIG);
-                if (extracted < energyPerDrop) {
+            if (requireEnergy && scaledEnergy > 0) {
+                double extracted = energyService.extractAEPower(scaledEnergy, Actionable.SIMULATE, PowerMultiplier.CONFIG);
+                if (extracted < scaledEnergy) {
                     break; // Network ran out of power
                 }
-                energyService.extractAEPower(energyPerDrop, Actionable.MODULATE, PowerMultiplier.CONFIG);
+                energyService.extractAEPower(scaledEnergy, Actionable.MODULATE, PowerMultiplier.CONFIG);
             }
 
             long inserted = mineCell.injectGeneratedDrop(key, canInsert, Actionable.MODULATE);

@@ -284,12 +284,18 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
                     return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
                 }
             } else {
-                // Clear configuration
+                // Clear configuration — only if cell is empty to prevent accidental wipe
                 if (!level.isClientSide()) {
-                    stack.remove(AEComponents.STORAGE_CELL_CONFIG_INV);
-                    stack.remove(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
-                    player.displayClientMessage(Component.translatable("message.ae2virtualmine.cleared")
-                            .withStyle(ChatFormatting.RED), true);
+                    appeng.api.storage.cells.StorageCell cell = appeng.api.storage.StorageCells.getCellInventory(stack, null);
+                    if (cell instanceof VirtualMineCellInventory mineInv && mineInv.getStoredItemCount() > 0) {
+                        player.displayClientMessage(Component.translatable("message.ae2virtualmine.clear_blocked")
+                                .withStyle(ChatFormatting.RED), true);
+                    } else {
+                        stack.remove(AEComponents.STORAGE_CELL_CONFIG_INV);
+                        stack.remove(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
+                        player.displayClientMessage(Component.translatable("message.ae2virtualmine.cleared")
+                                .withStyle(ChatFormatting.RED), true);
+                    }
                 }
                 return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
             }

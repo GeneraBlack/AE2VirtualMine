@@ -45,7 +45,9 @@ public class AE2VirtualMine {
         // Register Setup Listener
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(de.project.ae2virtualmine.network.VirtualPartitionerNetworking::onRegisterPayloadHandlers);
-        modEventBus.addListener(de.project.ae2virtualmine.client.VirtualPartitionerClient::onRegisterMenuScreens);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            modEventBus.addListener(de.project.ae2virtualmine.client.VirtualPartitionerClient::onRegisterMenuScreens);
+        }
 
         // Clear dynamic drop cache when tags/datapacks update
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.TagsUpdatedEvent event) -> {

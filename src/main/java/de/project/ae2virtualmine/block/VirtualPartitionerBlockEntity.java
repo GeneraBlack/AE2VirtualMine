@@ -1,6 +1,6 @@
 package de.project.ae2virtualmine.block;
 
-import de.project.ae2virtualmine.cell.IVirtualMineCell;
+import de.project.ae2virtualmine.cell.VirtualMineCellItem;
 import de.project.ae2virtualmine.menu.VirtualPartitionerMenu;
 import de.project.ae2virtualmine.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -74,6 +74,9 @@ public class VirtualPartitionerBlockEntity extends BlockEntity implements MenuPr
     public ItemStack removeItem(int slot, int count) {
         if (slot == 0 && !this.cellStack.isEmpty()) {
             ItemStack split = this.cellStack.split(count);
+            if (this.cellStack.isEmpty()) {
+                this.cellStack = ItemStack.EMPTY;
+            }
             setChanged();
             return split;
         }
@@ -111,6 +114,6 @@ public class VirtualPartitionerBlockEntity extends BlockEntity implements MenuPr
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return slot == 0 && stack.getItem() instanceof IVirtualMineCell;
+        return slot == 0 && stack.getItem() instanceof VirtualMineCellItem;
     }
 }
