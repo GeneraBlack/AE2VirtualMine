@@ -53,7 +53,7 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
         this.addSlot(new Slot(container, 0, 16, 20) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return stack.getItem() instanceof IVirtualMineCell;
+                return stack.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem;
             }
 
             @Override
@@ -102,7 +102,7 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
                 }
             } else {
                 // From inventory
-                if (stackInSlot.getItem() instanceof IVirtualMineCell) {
+                if (stackInSlot.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem) {
                     if (!this.moveItemStackTo(stackInSlot, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }
@@ -145,7 +145,7 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
             return;
         }
         ItemStack cellStack = cellSlot.getItem();
-        if (!(cellStack.getItem() instanceof IVirtualMineCell)) {
+        if (!(cellStack.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem)) {
             return;
         }
 
@@ -210,3 +210,5 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
         }
     }
 }
+
+

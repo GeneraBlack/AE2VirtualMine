@@ -84,8 +84,8 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
             scrollOffset = 0;
             dirty = false;
 
-            if (!currentCell.isEmpty() && currentCell.getItem() instanceof IVirtualMineCell virtualCell) {
-                MineCellPartitionList list = virtualCell.getPartitions();
+            if (!currentCell.isEmpty() && currentCell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem virtualCell) {
+                MineCellPartitionList list = currentCell.get(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
                 if (list != null && !list.isEmpty()) {
                     for (MineCellPartition p : list.partitions()) {
                         workingList.add(new PartitionDraft(p.target(), p.percent(), p.voidSecondary()));
@@ -135,7 +135,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
         // Drive Info Header
         ItemStack cell = menu.getSlot(0).getItem();
-        if (!cell.isEmpty() && cell.getItem() instanceof IVirtualMineCell virtualCell) {
+        if (!cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem virtualCell) {
             String tierName = virtualCell.getTier().getTierName() + " Virtual Drive";
             extractor.textRenderer().accept(x + 38, y + 21, Component.literal(tierName).withColor(0xFF55FF55));
 
@@ -156,7 +156,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         // Bar border
         extractor.fill(barX - 1, barY - 1, barX + barW + 1, barY + barH + 1, 0xFF0A0A0A);
 
-        if (cell.isEmpty() || !(cell.getItem() instanceof IVirtualMineCell)) {
+        if (cell.isEmpty() || !(cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem)) {
             extractor.fill(barX, barY, barX + barW, barY + barH, 0xFF2A2A2A);
             extractor.textRenderer().accept(TextAlignment.CENTER, barX + barW / 2, barY + 3,
                     Component.literal("NO DISK DETECTED").withColor(0xFF555555));
@@ -267,7 +267,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
         // Action Buttons Row (y=138)
         int btnY = y + 137;
-        boolean hasCell = !cell.isEmpty() && cell.getItem() instanceof IVirtualMineCell;
+        boolean hasCell = !cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem;
         int addColor = (hasCell && workingList.size() < 6 && getUnallocatedPercent() > 0) ? 0xFFFFFFFF : 0xFF666666;
         drawButton(extractor, x + 12, btnY, 36, 14, "+ Add", addColor);
 
@@ -330,7 +330,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         int barH = 14;
 
         ItemStack cell = menu.getSlot(0).getItem();
-        if (!cell.isEmpty() && cell.getItem() instanceof IVirtualMineCell virtualCell) {
+        if (!cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem virtualCell) {
             long totalBytes = virtualCell.getTier().getTotalBytes();
             if (mouseX >= barX && mouseX <= barX + barW && mouseY >= barY && mouseY <= barY + barH) {
                 int relX = mouseX - barX;
@@ -407,6 +407,24 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (workingList.size() > 3) {
+            int tableX = this.leftPos + 12;
+            int tableY = this.topPos + 58;
+            int tableW = 196;
+            int tableH = 76;
+            if (mouseX >= tableX && mouseX <= tableX + tableW && mouseY >= tableY && mouseY <= tableY + tableH) {
+                if (scrollY > 0 && scrollOffset > 0) {
+                    scrollOffset--;
+                    return true;
+                } else if (scrollY < 0 && scrollOffset + 3 < workingList.size()) {
+                    scrollOffset++;
+                    return true;
+                }
+            }
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
     public boolean mouseClicked(MouseButtonEvent event, boolean wasHandled) {
         int x = this.leftPos;
         int y = this.topPos;
@@ -414,7 +432,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         double mouseY = event.y();
 
         ItemStack cell = menu.getSlot(0).getItem();
-        boolean hasCell = !cell.isEmpty() && cell.getItem() instanceof IVirtualMineCell;
+        boolean hasCell = !cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem;
 
         // Action Buttons Row
         int btnY = y + 137;
@@ -589,3 +607,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         }
     }
 }
+
+
+
+

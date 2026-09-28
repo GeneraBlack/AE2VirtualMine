@@ -31,7 +31,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
 
     private final IGrid grid;
     private int tickCounter = 0;
-    private final Map<IVirtualMineCell, Integer> cellProgress = new WeakHashMap<>();
+    private final java.util.Map<Integer, Integer> cellProgress = new java.util.HashMap<>();
 
     public VirtualMineGridService(IGrid grid) {
         this.grid = grid;
@@ -94,12 +94,13 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
             default -> baseInterval;
         };
 
-        int progress = cellProgress.getOrDefault(mineCell, 0) + 5;
+        int key = System.identityHashCode(mineCell.getItemStack());
+        int progress = cellProgress.getOrDefault(key, 0) + 5;
         if (progress >= targetInterval) {
-            cellProgress.put(mineCell, 0);
+            cellProgress.put(key, 0);
             return processCell(mineCell, level, energyService, requireEnergy, random, speedCards, upgrades);
         } else {
-            cellProgress.put(mineCell, progress);
+            cellProgress.put(key, progress);
             return false;
         }
     }
@@ -166,21 +167,14 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
                 continue;
             }
 
-            ItemStack dropStack = MineDropRegistry.rollDrop(dropEntries, random);
+            MineDropRegistry.RolledDrop rolled = MineDropRegistry.rollDropWithIndex(dropEntries, random);
+            ItemStack dropStack = rolled.stack();
             if (dropStack.isEmpty()) {
                 continue;
             }
 
             // Check if this drop is a secondary byproduct
-            boolean isSecondary = false;
-            if (dropEntries.size() > 1) {
-                for (int s = 1; s < dropEntries.size(); s++) {
-                    if (ItemStack.isSameItem(dropStack, dropEntries.get(s).createStack())) {
-                        isSecondary = true;
-                        break;
-                    }
-                }
-            }
+            boolean isSecondary = rolled.entryIndex() > 0;
 
             boolean voidThisSecondary = globalVoidSecondary || selectedPartition.voidSecondary();
 
@@ -202,11 +196,13 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
 
             // Only consume AE power if the item actually fits into the cell
             if (requireEnergy && energyPerDrop > 0) {
-                double extracted = energyService.extractAEPower(energyPerDrop, Actionable.SIMULATE, PowerMultiplier.CONFIG);
-                if (extracted < energyPerDrop) {
+                int dropCount = dropStack.getCount();
+                double scaledEnergy = (canInsert < dropCount) ? energyPerDrop * ((double) canInsert / dropCount) : energyPerDrop;
+                double extracted = energyService.extractAEPower(scaledEnergy, Actionable.SIMULATE, PowerMultiplier.CONFIG);
+                if (extracted < scaledEnergy) {
                     break; // Network ran out of power
                 }
-                energyService.extractAEPower(energyPerDrop, Actionable.MODULATE, PowerMultiplier.CONFIG);
+                energyService.extractAEPower(scaledEnergy, Actionable.MODULATE, PowerMultiplier.CONFIG);
             }
 
             long inserted = mineCell.injectGeneratedDrop(key, canInsert, Actionable.MODULATE);
@@ -222,3 +218,4 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
         return anyInserted;
     }
 }
+

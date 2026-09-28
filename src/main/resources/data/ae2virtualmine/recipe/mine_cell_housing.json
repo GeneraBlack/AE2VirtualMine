@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": "ae2:quartz_glass",
-    "R": "minecraft:redstone",
-    "P": "minecraft:iron_pickaxe",
-    "I": "minecraft:iron_ingot"
+    "G": {
+      "item": "ae2:quartz_glass"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "minecraft:iron_pickaxe"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
   },
   "pattern": [
     "GRG",

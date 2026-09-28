@@ -7,10 +7,18 @@
     "ACA"
   ],
   "key": {
-    "A": "minecraft:redstone",
-    "B": "ae2:calculation_processor",
-    "C": "ae2virtualmine:mine_cell_component_4k",
-    "D": "ae2:quartz_glass"
+    "A": {
+      "item": "minecraft:redstone"
+    },
+    "B": {
+      "item": "ae2:calculation_processor"
+    },
+    "C": {
+      "item": "ae2virtualmine:mine_cell_component_4k"
+    },
+    "D": {
+      "item": "ae2:quartz_glass"
+    }
   },
   "result": {
     "id": "ae2virtualmine:mine_cell_component_16k"

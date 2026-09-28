@@ -286,9 +286,14 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
             } else {
                 // Clear configuration
                 if (!level.isClientSide()) {
+                    StorageCell cell = StorageCells.getCellInventory(stack, null);
+                    if (cell instanceof VirtualMineCellInventory mineInv && mineInv.getStoredItemTypes() > 0) {
+                        player.sendOverlayMessage(Component.translatable("message.ae2virtualmine.clear_blocked").withStyle(ChatFormatting.RED));
+                        return InteractionResult.FAIL;
+                    }
                     stack.remove(AEComponents.STORAGE_CELL_CONFIG_INV);
-                    player.sendOverlayMessage(Component.translatable("message.ae2virtualmine.cleared")
-                            .withStyle(ChatFormatting.RED));
+                    stack.remove(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
+                    player.sendOverlayMessage(Component.translatable("message.ae2virtualmine.cleared").withStyle(ChatFormatting.RED));
                 }
                 return InteractionResult.SUCCESS;
             }

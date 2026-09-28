@@ -51,7 +51,7 @@ public interface IVirtualMineCell extends StorageCell {
         }
         long allocatedBytes = (getTier().getTotalBytes() * partition.percent()) / 100L;
         long storedCount = getStoredCountForTarget(partition.target());
-        long storedBytes = (storedCount + 7L) / 8L;
+        long storedBytes = (storedCount + 7L) / 8L + (long) getTier().getBytesPerType();
         return storedBytes >= allocatedBytes;
     }
 }

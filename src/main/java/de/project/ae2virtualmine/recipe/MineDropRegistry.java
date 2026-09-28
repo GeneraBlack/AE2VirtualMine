@@ -356,7 +356,42 @@ public class MineDropRegistry {
         return ItemStack.EMPTY;
     }
 
+    
+    public record RolledDrop(ItemStack stack, int entryIndex) {}
+
+    public static RolledDrop rollDropWithIndex(List<MineDropEntry> entries, RandomSource random) {
+        if (entries == null || entries.isEmpty()) {
+            return new RolledDrop(ItemStack.EMPTY, -1);
+        }
+
+        int totalWeight = 0;
+        for (MineDropEntry entry : entries) {
+            totalWeight += entry.weight();
+        }
+
+        if (totalWeight <= 0) {
+            return new RolledDrop(ItemStack.EMPTY, -1);
+        }
+
+        int roll = random.nextInt(totalWeight);
+        int current = 0;
+        for (int i = 0; i < entries.size(); i++) {
+            MineDropEntry entry = entries.get(i);
+            current += entry.weight();
+            if (roll < current) {
+                int count = entry.minCount();
+                if (entry.maxCount() > entry.minCount()) {
+                    count += random.nextInt(entry.maxCount() - entry.minCount() + 1);
+                }
+                ItemStack result = entry.createStack();
+                result.setCount(count);
+                return new RolledDrop(result, i);
+            }
+        }
+        return new RolledDrop(ItemStack.EMPTY, -1);
+    }
     public static void clearCache() {
         DYNAMIC_CACHE.clear();
     }
 }
+
