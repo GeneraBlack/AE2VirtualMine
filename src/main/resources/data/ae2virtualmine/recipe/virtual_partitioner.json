@@ -13,11 +13,14 @@
     },
     "S": {
       "item": "minecraft:smooth_stone"
+    },
+    "P": {
+      "item": "minecraft:iron_pickaxe"
     }
   },
   "pattern": [
     "ICI",
-    "RSR",
+    "RPR",
     "SIS"
   ],
   "result": {
