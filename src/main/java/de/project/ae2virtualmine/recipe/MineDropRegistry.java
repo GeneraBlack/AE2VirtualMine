@@ -352,6 +352,10 @@ public class MineDropRegistry {
         return ItemStack.EMPTY;
     }
 
+    public static Map<Item, List<MineDropEntry>> getBuiltinDrops() {
+        return Collections.unmodifiableMap(BUILTIN_DROPS);
+    }
+
     public static void clearCache() {
         DYNAMIC_CACHE.clear();
     }

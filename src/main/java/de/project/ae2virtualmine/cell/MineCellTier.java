@@ -83,6 +83,12 @@ public enum MineCellTier {
                 case TIER_256K -> VirtualMineConfig.TIER_256K_DROPS.get();
             };
         }
-        return 1;
+        return switch (this) {
+            case TIER_1K -> 1;
+            case TIER_4K -> 4;
+            case TIER_16K -> 16;
+            case TIER_64K -> 64;
+            case TIER_256K -> 256;
+        };
     }
 }

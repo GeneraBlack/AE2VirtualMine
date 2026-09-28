@@ -25,6 +25,7 @@ repositories {
         content {
             includeGroup("appeng")
             includeGroup("org.appliedenergistics")
+            includeGroup("mezz.jei")
         }
     }
     maven {
@@ -38,6 +39,11 @@ repositories {
 
 dependencies {
     implementation "org.appliedenergistics:appliedenergistics2:${project.ae2_version}"
+
+    // JEI
+    compileOnly "mezz.jei:jei-1.21.1-common-api:${project.jei_version}"
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${project.jei_version}"
+    runtimeOnly "mezz.jei:jei-1.21.1-neoforge:${project.jei_version}"
 }
 
 neoForge {

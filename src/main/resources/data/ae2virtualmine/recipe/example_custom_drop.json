@@ -1,8 +1,6 @@
 {
   "type": "ae2virtualmine:mine_drop",
-  "target": {
-    "item": "minecraft:nether_star"
-  },
+  "target": "minecraft:nether_star",
   "min_tier": 4,
   "drops": [
     {

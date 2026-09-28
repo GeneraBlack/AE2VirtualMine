@@ -14,11 +14,28 @@
   "item.ae2virtualmine.mine_storage_cell_64k": "64k Virtuelle Minenzelle",
   "item.ae2virtualmine.mine_storage_cell_256k": "256k Virtuelle Minenzelle",
 
+  "item.ae2virtualmine.void_secondary_card": "Nebenprodukt-Vernichtungskarte",
+  "block.ae2virtualmine.virtual_partitioner": "Virtueller Laufwerkspartitionierer",
+  "gui.ae2virtualmine.virtual_partitioner": "Virtueller Laufwerkspartitionierer",
+
   "tooltip.ae2virtualmine.tier": "Stufe: %s",
   "tooltip.ae2virtualmine.production": "Erzeugt %s Drops alle %s Sekunden",
+  "tooltip.ae2virtualmine.production_speed": "Erzeugt %s Drops alle %s Sekunden (%s Beschleunigungskarten)",
+  "tooltip.ae2virtualmine.void_secondary_active": "◆ Nebenprodukt-Vernichtung aktiv",
   "tooltip.ae2virtualmine.configured_target": "Eingestellter Rohstoff / Ader: %s",
-  "tooltip.ae2virtualmine.not_configured": "Kein Erz oder Gestein konfiguriert! In Elementwerkbank oder per Sneak+Rechtsklick mit Rohstoff konfigurieren.",
+  "tooltip.ae2virtualmine.partitions_header": "Partitionen (%s):",
+  "tooltip.ae2virtualmine.not_configured": "Kein Erz oder Gestein konfiguriert! In Elementwerkbank, Partitioner oder per Sneak+Rechtsklick mit Rohstoff konfigurieren.",
 
   "message.ae2virtualmine.configured": "Minenzelle konfiguriert für: %s",
-  "message.ae2virtualmine.cleared": "Minenkonfiguration gelöscht."
+  "message.ae2virtualmine.cleared": "Minenkonfiguration gelöscht.",
+
+  "jei.ae2virtualmine.category.mining": "Virtueller Bergbau",
+  "jei.ae2virtualmine.min_tier": "Benötigt: %s+ Minenzelle",
+  "jei.ae2virtualmine.primary_drop": "Haupt-Ertrag",
+  "jei.ae2virtualmine.secondary_drop": "Nebenprodukt",
+  "jei.ae2virtualmine.drop_weight": "Chance: %s",
+  "jei.ae2virtualmine.drop_amount": "Menge: %sx",
+  "jei.ae2virtualmine.drop_amount_range": "Menge: %s-%sx",
+  "jei.ae2virtualmine.secondary_voidable": "(Vernichtbar mit Void Secondary Card)",
+  "jei.ae2virtualmine.cycle_details": "Zyklus: %s  |  Energie: %s AE/Drop"
 }

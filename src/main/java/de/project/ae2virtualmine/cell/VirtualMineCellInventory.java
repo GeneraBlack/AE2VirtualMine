@@ -20,7 +20,9 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class VirtualMineCellInventory implements IVirtualMineCell {
 
@@ -301,5 +303,25 @@ public class VirtualMineCellInventory implements IVirtualMineCell {
     @Override
     public Component getDescription() {
         return stack.getHoverName();
+    }
+
+    @Override
+    public long getStoredCountForTarget(Item target) {
+        if (target == null || this.storedAmounts.isEmpty()) {
+            return 0;
+        }
+        long count = 0;
+        List<MineDropEntry> drops = MineDropRegistry.getDropEntries(target, null, tier);
+        Set<Item> items = new HashSet<>();
+        items.add(target);
+        for (MineDropEntry drop : drops) {
+            items.add(drop.createStack().getItem());
+        }
+        for (var entry : Object2LongMaps.fastIterable(this.storedAmounts)) {
+            if (entry.getKey() instanceof AEItemKey itemKey && items.contains(itemKey.getItem())) {
+                count += entry.getLongValue();
+            }
+        }
+        return count;
     }
 }

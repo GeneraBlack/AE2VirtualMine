@@ -14,11 +14,28 @@
   "item.ae2virtualmine.mine_storage_cell_64k": "64k Virtual Mine Storage Cell",
   "item.ae2virtualmine.mine_storage_cell_256k": "256k Virtual Mine Storage Cell",
 
+  "item.ae2virtualmine.void_secondary_card": "Void Secondary Output Card",
+  "block.ae2virtualmine.virtual_partitioner": "Virtual Drive Partitioner",
+  "gui.ae2virtualmine.virtual_partitioner": "Virtual Drive Partitioner",
+
   "tooltip.ae2virtualmine.tier": "Tier: %s",
   "tooltip.ae2virtualmine.production": "Produces %s drops every %s seconds",
+  "tooltip.ae2virtualmine.production_speed": "Produces %s drops every %s seconds (%s Speed Cards)",
+  "tooltip.ae2virtualmine.void_secondary_active": "◆ Void Secondary Output Active",
   "tooltip.ae2virtualmine.configured_target": "Configured Deposit / Target: %s",
-  "tooltip.ae2virtualmine.not_configured": "No ore or stone configured! Configure via Cell Workbench or Sneak+Right-Click with raw ore or stone.",
+  "tooltip.ae2virtualmine.partitions_header": "Partitions (%s):",
+  "tooltip.ae2virtualmine.not_configured": "No ore or stone configured! Configure via Cell Workbench, Partitioner or Sneak+Right-Click with raw ore or stone.",
 
   "message.ae2virtualmine.configured": "Configured mining cell for: %s",
-  "message.ae2virtualmine.cleared": "Cleared mining cell configuration."
+  "message.ae2virtualmine.cleared": "Cleared mining cell configuration.",
+
+  "jei.ae2virtualmine.category.mining": "Virtual Mining",
+  "jei.ae2virtualmine.min_tier": "Requires: %s+ Mine Cell",
+  "jei.ae2virtualmine.primary_drop": "Primary Output",
+  "jei.ae2virtualmine.secondary_drop": "Secondary Byproduct",
+  "jei.ae2virtualmine.drop_weight": "Weight: %s",
+  "jei.ae2virtualmine.drop_amount": "Amount: %sx",
+  "jei.ae2virtualmine.drop_amount_range": "Amount: %s-%sx",
+  "jei.ae2virtualmine.secondary_voidable": "(Can be voided with Void Secondary Card)",
+  "jei.ae2virtualmine.cycle_details": "Cycle: %s  |  Energy: %s AE/drop"
 }

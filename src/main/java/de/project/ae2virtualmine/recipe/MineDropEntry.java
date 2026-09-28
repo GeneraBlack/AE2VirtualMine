@@ -22,4 +22,10 @@ public record MineDropEntry(ItemStack item, int weight, int minCount, int maxCou
             ByteBufCodecs.VAR_INT, MineDropEntry::maxCount,
             MineDropEntry::new
     );
+
+    public ItemStack createStack() {
+        ItemStack copy = item.copy();
+        copy.setCount(Math.max(1, minCount));
+        return copy;
+    }
 }
