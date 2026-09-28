@@ -126,8 +126,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
         double energyPerDrop = baseEnergy * energyMultiplier;
         boolean anyInserted = false;
 
-        boolean globalVoidSecondary = upgrades.isInstalled(ModItems.VOID_SECONDARY_CARD.get())
-                || upgrades.isInstalled(AEItems.VOID_CARD.asItem());
+        boolean globalVoidSecondary = de.project.ae2virtualmine.util.VirtualCellAdapter.hasVoidSecondaryCard(upgrades);
 
         for (int c = 0; c < dropCycles; c++) {
             if (mineCell.isFull() || mineCell.getStatus() == CellState.FULL) {

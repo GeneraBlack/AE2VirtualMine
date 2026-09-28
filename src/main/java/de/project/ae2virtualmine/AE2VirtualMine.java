@@ -17,6 +17,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.List;
 
 @Mod(AE2VirtualMine.MODID)
 public class AE2VirtualMine {
@@ -77,6 +78,15 @@ public class AE2VirtualMine {
                 appeng.api.upgrades.Upgrades.add(appeng.core.definitions.AEItems.SPEED_CARD.asItem(), cell.get(), 4);
                 appeng.api.upgrades.Upgrades.add(ModItems.VOID_SECONDARY_CARD.get(), cell.get(), 1);
                 appeng.api.upgrades.Upgrades.add(appeng.core.definitions.AEItems.VOID_CARD.asItem(), cell.get(), 1);
+
+                for (String ns : List.of("ae2virtualgarden", "ae2virtualbattle", "ae2virtualwell")) {
+                    net.minecraft.world.item.Item sisterCard = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
+                            net.minecraft.resources.Identifier.fromNamespaceAndPath(ns, "void_secondary_card")
+                    ).map(net.minecraft.core.Holder::value).orElse(net.minecraft.world.item.Items.AIR);
+                    if (sisterCard != net.minecraft.world.item.Items.AIR) {
+                        appeng.api.upgrades.Upgrades.add(sisterCard, cell.get(), 1);
+                    }
+                }
             }
         });
     }

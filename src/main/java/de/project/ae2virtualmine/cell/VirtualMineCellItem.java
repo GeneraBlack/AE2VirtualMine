@@ -166,8 +166,7 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
                     .withStyle(ChatFormatting.GRAY));
         }
 
-        boolean hasVoidSecondary = upgrades.isInstalled(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get())
-                || upgrades.isInstalled(appeng.core.definitions.AEItems.VOID_CARD.asItem());
+        boolean hasVoidSecondary = de.project.ae2virtualmine.util.VirtualCellAdapter.hasVoidSecondaryCard(upgrades);
         if (hasVoidSecondary) {
             lines.accept(Component.translatable("tooltip.ae2virtualmine.void_secondary_active")
                     .withStyle(ChatFormatting.DARK_PURPLE));
