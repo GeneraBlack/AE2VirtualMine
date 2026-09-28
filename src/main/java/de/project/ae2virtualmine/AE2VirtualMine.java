@@ -49,9 +49,15 @@ public class AE2VirtualMine {
             modEventBus.addListener(de.project.ae2virtualmine.client.VirtualPartitionerClient::onRegisterMenuScreens);
         }
 
-        // Clear dynamic drop cache when tags/datapacks update
+        // Refresh recipe cache and clear dynamic cache when tags/datapacks update
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.TagsUpdatedEvent event) -> {
             de.project.ae2virtualmine.recipe.MineDropRegistry.clearCache();
+            // BUG-07: Rebuild the recipe cache from the server's loaded recipes
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server != null) {
+                de.project.ae2virtualmine.recipe.MineDropRegistry.refreshRecipeCache(server.getRecipeManager());
+                LOGGER.info("AE2 Virtual Mine: Refreshed recipe cache");
+            }
         });
     }
 
