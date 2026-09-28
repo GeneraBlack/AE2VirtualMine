@@ -25,6 +25,8 @@ public class MineDropRegistry {
 
     private static final Map<Item, List<MineDropEntry>> BUILTIN_DROPS = new HashMap<>();
     private static final Map<Item, List<MineDropEntry>> DYNAMIC_CACHE = new HashMap<>();
+    // BUG-07 FIX: Cache of datapack recipe drops, populated on reload so null-Level lookups still work
+    private static final Map<Item, MineDropRecipe> RECIPE_CACHE = new HashMap<>();
 
     // Common NeoForge tags for mining resources
     private static final TagKey<Item> C_ORES = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "ores"));
@@ -240,6 +242,11 @@ public class MineDropRegistry {
             if (level.getRecipeManager().getRecipeFor(ModRecipes.MINE_DROP_TYPE.get(), input, level).isPresent()) {
                 return true;
             }
+        } else {
+            // BUG-07 FIX: Use recipe cache when Level is unavailable
+            if (RECIPE_CACHE.containsKey(item)) {
+                return true;
+            }
         }
 
         // 2. Check dynamic cache (modded items that were already verified)
@@ -284,6 +291,18 @@ public class MineDropRegistry {
                     }
                 }
                 return recipe.drops();
+            }
+        } else {
+            // BUG-07 FIX: Use recipe cache when Level is unavailable (e.g. insert() from ME network)
+            MineDropRecipe cached = getCachedRecipe(target);
+            if (cached != null) {
+                if (tier != null) {
+                    int cellTierNumber = tier.ordinal() + 1;
+                    if (cellTierNumber < cached.minTier()) {
+                        return Collections.emptyList();
+                    }
+                }
+                return cached.drops();
             }
         }
 
@@ -374,7 +393,31 @@ public class MineDropRegistry {
         return Collections.unmodifiableMap(BUILTIN_DROPS);
     }
 
+    /**
+     * Rebuild the recipe cache from a loaded RecipeManager.
+     * Call this on datapack reload (e.g. RecipesUpdatedEvent or TagsUpdatedEvent).
+     */
+    public static void refreshRecipeCache(net.minecraft.world.item.crafting.RecipeManager recipeManager) {
+        RECIPE_CACHE.clear();
+        for (RecipeHolder<?> holder : recipeManager.getRecipes()) {
+            if (holder.value() instanceof MineDropRecipe recipe) {
+                for (ItemStack stack : recipe.target().getItems()) {
+                    RECIPE_CACHE.put(stack.getItem(), recipe);
+                }
+            }
+        }
+    }
+
+    /**
+     * Look up a cached datapack recipe for the given target (used when Level is null).
+     */
+    @Nullable
+    static MineDropRecipe getCachedRecipe(Item target) {
+        return RECIPE_CACHE.get(target);
+    }
+
     public static void clearCache() {
         DYNAMIC_CACHE.clear();
+        RECIPE_CACHE.clear();
     }
 }
