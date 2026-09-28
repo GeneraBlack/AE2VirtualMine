@@ -32,82 +32,21 @@ import java.util.List;
 import java.util.Set;
 
 public class VirtualPartitionerMenu extends AbstractContainerMenu {
-    private final Container upgradeContainer = new Container() {
-        private appeng.api.upgrades.IUpgradeInventory getInv() {
-            ItemStack cell = container.getItem(0);
-            if (!cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem) {
-                return appeng.api.upgrades.UpgradeInventories.forItem(cell, 4);
-            }
-            return null;
-        }
+    private final Container container;
+    private final ContainerLevelAccess access;
 
-        @Override
-        public int getContainerSize() { return 4; }
+    private boolean loadingUpgrades = false;
+    private ItemStack lastCellInSlot0 = ItemStack.EMPTY;
 
-        @Override
-        public boolean isEmpty() {
-            var inv = getInv();
-            return inv == null ? true : inv.isEmpty();
-        }
-
-        @Override
-        public ItemStack getItem(int slot) {
-            var inv = getInv();
-            return inv == null ? ItemStack.EMPTY : inv.getStackInSlot(slot);
-        }
-
-        @Override
-        public ItemStack removeItem(int slot, int amount) {
-            var inv = getInv();
-            if (inv != null) {
-                ItemStack res = inv.extractItem(slot, amount, false);
-                container.setChanged();
-                return res;
-            }
-            return ItemStack.EMPTY;
-        }
-
-        @Override
-        public ItemStack removeItemNoUpdate(int slot) {
-            var inv = getInv();
-            if (inv != null) {
-                ItemStack res = inv.extractItem(slot, inv.getStackInSlot(slot).getCount(), false);
-                container.setChanged();
-                return res;
-            }
-            return ItemStack.EMPTY;
-        }
-
-        @Override
-        public void setItem(int slot, ItemStack stack) {
-            var inv = getInv();
-            if (inv != null) {
-                inv.setItemDirect(slot, stack);
-                container.setChanged();
-            }
-        }
-
+    private final SimpleContainer upgradeContainer = new SimpleContainer(5) {
         @Override
         public void setChanged() {
-            container.setChanged();
-        }
-
-        @Override
-        public boolean stillValid(Player player) {
-            return true;
-        }
-
-        @Override
-        public void clearContent() {
-            var inv = getInv();
-            if (inv != null) {
-                inv.clear();
-                container.setChanged();
+            super.setChanged();
+            if (!loadingUpgrades) {
+                saveUpgradesToCell();
             }
         }
     };
-    private final Container container;
-    private final ContainerLevelAccess access;
 
     public VirtualPartitionerMenu(int containerId, Inventory playerInventory, RegistryFriendlyByteBuf extraData) {
         this(containerId, playerInventory, new SimpleContainer(1),
@@ -134,21 +73,27 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
             public int getMaxStackSize() {
                 return 1;
             }
+
+            @Override
+            public void set(ItemStack stack) {
+                super.set(stack);
+                loadUpgradesFromCell();
+            }
+
+            @Override
+            public void onTake(Player player, ItemStack stack) {
+                super.onTake(player, stack);
+                loadUpgradesFromCell();
+            }
         });
 
-        // Upgrade Slots (4 slots) — positioned between action buttons and inventory
+        // Slots 1..4: 4 Acceleration Card Slots (indices 0..3 in upgradeContainer)
+        // Positioned: x = 52 + i * 18, y = 155
         for (int i = 0; i < 4; i++) {
-            this.addSlot(new Slot(this.upgradeContainer, i, 80 + i * 18, 155) {
+            this.addSlot(new Slot(this.upgradeContainer, i, 52 + i * 18, 155) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    ItemStack cell = container.getItem(0);
-                    if (!cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem) {
-                        var inv = appeng.api.upgrades.UpgradeInventories.forItem(cell, 4);
-                        if (inv != null) {
-                            return inv.isItemValid(getSlotIndex(), stack);
-                        }
-                    }
-                    return false;
+                    return !container.getItem(0).isEmpty() && stack.is(appeng.core.definitions.AEItems.SPEED_CARD.asItem());
                 }
 
                 @Override
@@ -162,7 +107,28 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
                 }
             });
         }
-        // Player Inventory (3 rows x 9 columns) — shifted down for upgrade row
+
+        // Slot 5: 1 Void Secondary Output Card Slot (index 4 in upgradeContainer)
+        // Positioned with a gap: x = 138, y = 155
+        this.addSlot(new Slot(this.upgradeContainer, 4, 138, 155) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return !container.getItem(0).isEmpty() && (stack.is(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get())
+                        || stack.is(appeng.core.definitions.AEItems.VOID_CARD.asItem()));
+            }
+
+            @Override
+            public int getMaxStackSize() {
+                return 1;
+            }
+
+            @Override
+            public boolean isActive() {
+                return !container.getItem(0).isEmpty();
+            }
+        });
+
+        // Slots 6..32: Player Inventory (3 rows x 9 columns)
         int invStartX = 30;
         int invStartY = 180;
         for (int row = 0; row < 3; ++row) {
@@ -171,10 +137,62 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
             }
         }
 
-        // Hotbar (1 row x 9 columns)
+        // Slots 33..41: Hotbar (1 row x 9 columns)
         int hotbarStartY = 238;
         for (int col = 0; col < 9; ++col) {
             this.addSlot(new Slot(playerInventory, col, invStartX + col * 18, hotbarStartY));
+        }
+
+        loadUpgradesFromCell();
+    }
+
+    private void loadUpgradesFromCell() {
+        loadingUpgrades = true;
+        try {
+            upgradeContainer.clearContent();
+            ItemStack cell = container.getItem(0);
+            if (!cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem) {
+                var inv = appeng.api.upgrades.UpgradeInventories.forItem(cell, 5);
+                int speedIdx = 0;
+                for (int i = 0; i < inv.size(); i++) {
+                    ItemStack upgrade = inv.getStackInSlot(i);
+                    if (upgrade.isEmpty()) continue;
+                    if (upgrade.is(appeng.core.definitions.AEItems.SPEED_CARD.asItem())) {
+                        if (speedIdx < 4) {
+                            upgradeContainer.setItem(speedIdx++, upgrade.copyWithCount(1));
+                        }
+                    } else if (upgrade.is(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get())
+                            || upgrade.is(appeng.core.definitions.AEItems.VOID_CARD.asItem())) {
+                        upgradeContainer.setItem(4, upgrade.copyWithCount(1));
+                    }
+                }
+            }
+        } finally {
+            loadingUpgrades = false;
+        }
+    }
+
+    private void saveUpgradesToCell() {
+        ItemStack cell = container.getItem(0);
+        if (!cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem) {
+            List<ItemStack> list = new ArrayList<>();
+            for (int i = 0; i < 5; i++) {
+                ItemStack stack = upgradeContainer.getItem(i);
+                if (!stack.isEmpty()) {
+                    list.add(stack.copy());
+                }
+            }
+            if (list.isEmpty()) {
+                cell.remove(AEComponents.UPGRADES);
+            } else {
+                cell.set(AEComponents.UPGRADES, net.minecraft.world.item.component.ItemContainerContents.fromItems(list));
+            }
+            container.setChanged();
+            Slot cellSlot = this.slots.get(0);
+            if (cellSlot != null) {
+                cellSlot.setChanged();
+            }
+            broadcastChanges();
         }
     }
 
@@ -188,6 +206,16 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
     }
 
     @Override
+    public void broadcastChanges() {
+        ItemStack currentCell = container.getItem(0);
+        if (!ItemStack.matches(currentCell, lastCellInSlot0)) {
+            lastCellInSlot0 = currentCell.copy();
+            loadUpgradesFromCell();
+        }
+        super.broadcastChanges();
+    }
+
+    @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
@@ -195,27 +223,56 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
             ItemStack stackInSlot = slot.getItem();
             itemstack = stackInSlot.copy();
 
-            if (index < 5) {
-                // Move cell or upgrade to player inventory
-                if (!this.moveItemStackTo(stackInSlot, 5, 41, true)) {
+            if (index == 0) {
+                // Move cell to player inventory / hotbar (slots 6..42)
+                if (!this.moveItemStackTo(stackInSlot, 6, 42, true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (index >= 1 && index <= 5) {
+                // Move upgrade to player inventory / hotbar (slots 6..42)
+                if (!this.moveItemStackTo(stackInSlot, 6, 42, true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // From player inventory
+                // From inventory / hotbar (index >= 6)
                 if (stackInSlot.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem) {
                     if (!this.moveItemStackTo(stackInSlot, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                } else if (!this.moveItemStackTo(stackInSlot, 1, 5, false)) {
-                    // Try moving to upgrade slots, if not an upgrade or slots full, just arrange within inventory
-                    if (index >= 5 && index < 32) {
-                        if (!this.moveItemStackTo(stackInSlot, 32, 41, false)) {
-                            return ItemStack.EMPTY;
+                } else if (stackInSlot.is(appeng.core.definitions.AEItems.SPEED_CARD.asItem())) {
+                    // Try moving to acceleration slots (1..5)
+                    if (!this.moveItemStackTo(stackInSlot, 1, 5, false)) {
+                        if (index >= 6 && index < 33) {
+                            if (!this.moveItemStackTo(stackInSlot, 33, 42, false)) {
+                                return ItemStack.EMPTY;
+                            }
+                        } else if (index >= 33 && index < 42) {
+                            if (!this.moveItemStackTo(stackInSlot, 6, 33, false)) {
+                                return ItemStack.EMPTY;
+                            }
                         }
-                    } else if (index >= 32 && index < 41) {
-                        if (!this.moveItemStackTo(stackInSlot, 5, 32, false)) {
-                            return ItemStack.EMPTY;
+                    }
+                } else if (stackInSlot.is(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get())
+                        || stackInSlot.is(appeng.core.definitions.AEItems.VOID_CARD.asItem())) {
+                    // Try moving to void slot (5..6)
+                    if (!this.moveItemStackTo(stackInSlot, 5, 6, false)) {
+                        if (index >= 6 && index < 33) {
+                            if (!this.moveItemStackTo(stackInSlot, 33, 42, false)) {
+                                return ItemStack.EMPTY;
+                            }
+                        } else if (index >= 33 && index < 42) {
+                            if (!this.moveItemStackTo(stackInSlot, 6, 33, false)) {
+                                return ItemStack.EMPTY;
+                            }
                         }
+                    }
+                } else if (index >= 6 && index < 33) {
+                    if (!this.moveItemStackTo(stackInSlot, 33, 42, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if (index >= 33 && index < 42) {
+                    if (!this.moveItemStackTo(stackInSlot, 6, 33, false)) {
+                        return ItemStack.EMPTY;
                     }
                 }
             }
@@ -232,6 +289,7 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
 
             slot.onTake(player, stackInSlot);
         }
+
         return itemstack;
     }
 

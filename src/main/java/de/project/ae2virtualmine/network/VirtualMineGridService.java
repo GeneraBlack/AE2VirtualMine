@@ -82,7 +82,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
     }
 
     private boolean tickCell(IVirtualMineCell mineCell, Level level, IEnergyService energyService, boolean requireEnergy, RandomSource random) {
-        IUpgradeInventory upgrades = UpgradeInventories.forItem(mineCell.getItemStack(), 4);
+        IUpgradeInventory upgrades = UpgradeInventories.forItem(mineCell.getItemStack(), 5);
         int speedCards = Math.min(4, upgrades.getInstalledUpgrades(AEItems.SPEED_CARD.asItem()));
         int baseInterval = VirtualMineConfig.BASE_TICK_INTERVAL.get();
 

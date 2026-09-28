@@ -289,10 +289,11 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         drawButtonWithCustomBg(extractor, x + 138, btnY, 70, 14, dirty ? "Apply *" : "Apply", applyText, applyBg);
 
         // Upgrade Slots Row (y=155)
-        extractor.textRenderer().accept(TextAlignment.LEFT, x + 12, y + 157,
+        extractor.textRenderer().accept(TextAlignment.LEFT, x + 10, y + 158,
                 Component.literal("Upgrades:").withColor(0xFF888888));
+        // 4 Acceleration card slots (x = 52 + i * 18)
         for (int i = 0; i < 4; i++) {
-            int slotX = x + 79 + i * 18;
+            int slotX = x + 51 + i * 18;
             int slotY = y + 154;
             if (hasCell) {
                 drawSlotBox(extractor, slotX, slotY);
@@ -300,6 +301,15 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
                 extractor.fill(slotX, slotY, slotX + 18, slotY + 18, 0xFF1A1A1A);
                 extractor.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF111111);
             }
+        }
+        // 1 Void Secondary card slot (x = 138)
+        int voidSlotX = x + 137;
+        int voidSlotY = y + 154;
+        if (hasCell) {
+            drawVoidSlotBox(extractor, voidSlotX, voidSlotY);
+        } else {
+            extractor.fill(voidSlotX, voidSlotY, voidSlotX + 18, voidSlotY + 18, 0xFF1A1A1A);
+            extractor.fill(voidSlotX + 1, voidSlotY + 1, voidSlotX + 17, voidSlotY + 17, 0xFF111111);
         }
 
         // Player Inventory slots
@@ -320,6 +330,15 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
     private void drawSlotBox(GuiGraphicsExtractor extractor, int sx, int sy) {
         extractor.fill(sx, sy, sx + 18, sy + 18, 0xFF373737);
+        extractor.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF8B8B8B);
+        extractor.fill(sx + 1, sy + 1, sx + 16, sy + 16, 0xFF373737);
+        extractor.fill(sx + 1, sy + 1, sx + 17, sy + 2, 0xFF373737);
+        extractor.fill(sx + 1, sy + 1, sx + 2, sy + 17, 0xFF373737);
+        extractor.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF1A1A1A);
+    }
+
+    private void drawVoidSlotBox(GuiGraphicsExtractor extractor, int sx, int sy) {
+        extractor.fill(sx, sy, sx + 18, sy + 18, 0xFF5A189A); // Subtle purple highlight
         extractor.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF8B8B8B);
         extractor.fill(sx + 1, sy + 1, sx + 16, sy + 16, 0xFF373737);
         extractor.fill(sx + 1, sy + 1, sx + 17, sy + 2, 0xFF373737);
@@ -426,6 +445,24 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
                 } else {
                     extractor.setTooltipForNextFrame(font, Component.literal("Requires Void Secondary Card").withStyle(net.minecraft.ChatFormatting.RED), mouseX, mouseY);
                 }
+            }
+        }
+
+        // Empty Upgrade slot tooltips
+        for (int i = 0; i < 4; i++) {
+            int slotX = x + 51 + i * 18;
+            int slotY = y + 154;
+            if (mouseX >= slotX && mouseX <= slotX + 18 && mouseY >= slotY && mouseY <= slotY + 18) {
+                if (!menu.getSlot(1 + i).hasItem()) {
+                    extractor.setTooltipForNextFrame(font, Component.literal("Acceleration Card (" + (i + 1) + "/4)").withStyle(net.minecraft.ChatFormatting.GRAY), mouseX, mouseY);
+                }
+            }
+        }
+        int voidSlotX = x + 137;
+        int voidSlotY = y + 154;
+        if (mouseX >= voidSlotX && mouseX <= voidSlotX + 18 && mouseY >= voidSlotY && mouseY <= voidSlotY + 18) {
+            if (!menu.getSlot(5).hasItem()) {
+                extractor.setTooltipForNextFrame(font, Component.literal("Void Secondary Card").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE), mouseX, mouseY);
             }
         }
     }
@@ -608,10 +645,10 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
     private boolean hasVoidCard(ItemStack cell) {
         if (cell.isEmpty()) return false;
-        var upgrades = appeng.api.upgrades.UpgradeInventories.forItem(cell, 4);
-        if (upgrades == null) return false;
-        return upgrades.isInstalled(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get()) 
-            || upgrades.isInstalled(appeng.core.definitions.AEItems.VOID_CARD.asItem());
+        if (menu.getSlot(5).hasItem()) return true;
+        var upgrades = appeng.api.upgrades.UpgradeInventories.forItem(cell, 5);
+        return upgrades != null && (upgrades.isInstalled(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get()) 
+            || upgrades.isInstalled(appeng.core.definitions.AEItems.VOID_CARD.asItem()));
     }
 
     private Item findFirstUnusedInventoryTarget() {
