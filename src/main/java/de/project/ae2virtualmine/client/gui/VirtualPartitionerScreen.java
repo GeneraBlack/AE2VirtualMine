@@ -78,7 +78,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
     private void syncFromCell(boolean force) {
         ItemStack currentCell = menu.getSlot(0).getItem();
-        if (force || !ItemStack.isSameItemSameComponents(currentCell, lastCellStack)) {
+        if (force || !ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(VirtualCellAdapter.readPartitions(currentCell), VirtualCellAdapter.readPartitions(lastCellStack))) {
             lastCellStack = currentCell.copy();
             workingList.clear();
             selectedRowForPicker = -1;
