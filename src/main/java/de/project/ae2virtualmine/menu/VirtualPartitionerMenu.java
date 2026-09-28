@@ -153,9 +153,11 @@ public class VirtualPartitionerMenu extends AbstractContainerMenu {
             upgradeContainer.clearContent();
             ItemStack cell = container.getItem(0);
             if (!cell.isEmpty() && cell.getItem() instanceof VirtualMineCellItem) {
-                var contents = cell.getOrDefault(AEComponents.UPGRADES, net.minecraft.world.item.component.ItemContainerContents.EMPTY);
+                var inv = appeng.api.upgrades.UpgradeInventories.forItem(cell, 5);
                 int speedIdx = 0;
-                for (ItemStack upgrade : contents.nonEmptyItems()) {
+                for (int i = 0; i < inv.size(); i++) {
+                    ItemStack upgrade = inv.getStackInSlot(i);
+                    if (upgrade.isEmpty()) continue;
                     if (upgrade.is(appeng.core.definitions.AEItems.SPEED_CARD.asItem())) {
                         if (speedIdx < 4) {
                             upgradeContainer.setItem(speedIdx++, upgrade.copyWithCount(1));
