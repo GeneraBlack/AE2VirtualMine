@@ -217,6 +217,10 @@ public class MineDropRegistry {
         BUILTIN_DROPS.put(target, drops);
     }
 
+    public static Map<Item, List<MineDropEntry>> getBuiltinDrops() {
+        return Collections.unmodifiableMap(BUILTIN_DROPS);
+    }
+
     public static boolean isOreOrMiningResource(Item item) {
         ItemStack stack = new ItemStack(item);
         if (stack.is(C_ORES) || stack.is(C_RAW_MATERIALS) || stack.is(C_GEMS) || stack.is(C_DUSTS) || stack.is(C_STONES)) {

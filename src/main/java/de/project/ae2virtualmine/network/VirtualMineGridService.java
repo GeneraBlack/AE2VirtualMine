@@ -10,23 +10,28 @@ import appeng.api.networking.energy.IEnergyService;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.storage.cells.CellState;
 import appeng.api.storage.cells.StorageCell;
+import appeng.api.upgrades.IUpgradeInventory;
+import appeng.api.upgrades.UpgradeInventories;
+import appeng.core.definitions.AEItems;
 import de.project.ae2virtualmine.cell.IVirtualMineCell;
+import de.project.ae2virtualmine.cell.partition.MineCellPartition;
+import de.project.ae2virtualmine.cell.partition.MineCellPartitionList;
 import de.project.ae2virtualmine.config.VirtualMineConfig;
 import de.project.ae2virtualmine.recipe.MineDropEntry;
 import de.project.ae2virtualmine.recipe.MineDropRegistry;
+import de.project.ae2virtualmine.registry.ModItems;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class VirtualMineGridService implements IGridServiceProvider, IVirtualMineGridService {
 
     private final IGrid grid;
     private int tickCounter = 0;
+    private final Map<IVirtualMineCell, Integer> cellProgress = new WeakHashMap<>();
 
     public VirtualMineGridService(IGrid grid) {
         this.grid = grid;
@@ -39,11 +44,9 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
         }
 
         tickCounter++;
-        int interval = VirtualMineConfig.BASE_TICK_INTERVAL.get();
-        if (tickCounter < interval) {
+        if (tickCounter % 5 != 0) {
             return;
         }
-        tickCounter = 0;
 
         IEnergyService energyService = grid.getEnergyService();
         boolean requireEnergy = VirtualMineConfig.REQUIRE_AE_ENERGY.get();
@@ -67,7 +70,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
                 for (int i = 0; i < drive.getCellCount(); i++) {
                     StorageCell cell = drive.getOriginalCellInventory(i);
                     if (cell instanceof IVirtualMineCell mineCell) {
-                        altered |= processCell(mineCell, level, energyService, requireEnergy, random);
+                        altered |= tickCell(mineCell, level, energyService, requireEnergy, random);
                     }
                 }
             }
@@ -78,19 +81,37 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
         }
     }
 
-    private boolean processCell(IVirtualMineCell mineCell, Level level, IEnergyService energyService, boolean requireEnergy, RandomSource random) {
-        // 1. If cell is full, stop immediately and do not generate or consume power
+    private boolean tickCell(IVirtualMineCell mineCell, Level level, IEnergyService energyService, boolean requireEnergy, RandomSource random) {
+        IUpgradeInventory upgrades = UpgradeInventories.forItem(mineCell.getItemStack(), 4);
+        int speedCards = Math.min(4, upgrades.getInstalledUpgrades(AEItems.SPEED_CARD.asItem()));
+        int baseInterval = VirtualMineConfig.BASE_TICK_INTERVAL.get();
+
+        int targetInterval = switch (speedCards) {
+            case 1 -> (int) (baseInterval * 0.70);
+            case 2 -> (int) (baseInterval * 0.45);
+            case 3 -> (int) (baseInterval * 0.30);
+            case 4 -> Math.max(10, (int) (baseInterval * 0.20));
+            default -> baseInterval;
+        };
+
+        int progress = cellProgress.getOrDefault(mineCell, 0) + 5;
+        if (progress >= targetInterval) {
+            cellProgress.put(mineCell, 0);
+            return processCell(mineCell, level, energyService, requireEnergy, random, speedCards, upgrades);
+        } else {
+            cellProgress.put(mineCell, progress);
+            return false;
+        }
+    }
+
+    private boolean processCell(IVirtualMineCell mineCell, Level level, IEnergyService energyService, boolean requireEnergy, RandomSource random, int speedCards, IUpgradeInventory upgrades) {
+        // 1. If whole cell is full, stop immediately
         if (mineCell.isFull() || mineCell.getStatus() == CellState.FULL) {
             return false;
         }
 
-        Item target = mineCell.getConfiguredTarget();
-        if (target == null || !MineDropRegistry.isValidMiningTarget(target, level)) {
-            return false;
-        }
-
-        List<MineDropEntry> dropEntries = MineDropRegistry.getDropEntries(target, level, mineCell.getTier());
-        if (dropEntries.isEmpty()) {
+        MineCellPartitionList partitionList = mineCell.getPartitions();
+        if (partitionList.isEmpty()) {
             return false;
         }
 
@@ -99,17 +120,75 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
             return false;
         }
 
-        double energyPerDrop = VirtualMineConfig.ENERGY_PER_DROP.get();
+        double baseEnergy = VirtualMineConfig.ENERGY_PER_DROP.get();
+        double energyMultiplier = Math.pow(1.5, speedCards);
+        double energyPerDrop = baseEnergy * energyMultiplier;
         boolean anyInserted = false;
 
+        boolean globalVoidSecondary = upgrades.isInstalled(ModItems.VOID_SECONDARY_CARD.get())
+                || upgrades.isInstalled(AEItems.VOID_CARD.asItem());
+
         for (int c = 0; c < dropCycles; c++) {
-            // Check if cell has become full during the cycle
             if (mineCell.isFull() || mineCell.getStatus() == CellState.FULL) {
-                break; // Stop generating, cell is full!
+                break;
+            }
+
+            // Weighted selection across partitions (0 to 99)
+            int roll = random.nextInt(100);
+            int cumulative = 0;
+            MineCellPartition selectedPartition = null;
+
+            for (MineCellPartition p : partitionList.partitions()) {
+                cumulative += p.percent();
+                if (roll < cumulative) {
+                    selectedPartition = p;
+                    break;
+                }
+            }
+
+            // If roll falls into unallocated space (or no partition selected), cycle is idle
+            if (selectedPartition == null) {
+                continue;
+            }
+
+            // If this specific partition has reached its capacity, skip it (other partitions can still produce!)
+            if (mineCell.isPartitionFull(selectedPartition)) {
+                continue;
+            }
+
+            Item target = selectedPartition.target();
+            if (target == null || !MineDropRegistry.isValidMiningTarget(target, level)) {
+                continue;
+            }
+
+            List<MineDropEntry> dropEntries = MineDropRegistry.getDropEntries(target, level, mineCell.getTier());
+            if (dropEntries.isEmpty()) {
+                continue;
             }
 
             ItemStack dropStack = MineDropRegistry.rollDrop(dropEntries, random);
             if (dropStack.isEmpty()) {
+                continue;
+            }
+
+            // Check if this drop is a secondary byproduct
+            boolean isSecondary = false;
+            if (dropEntries.size() > 1) {
+                for (int s = 1; s < dropEntries.size(); s++) {
+                    if (ItemStack.isSameItem(dropStack, dropEntries.get(s).createStack())) {
+                        isSecondary = true;
+                        break;
+                    }
+                }
+            }
+
+            boolean voidThisSecondary = globalVoidSecondary || selectedPartition.voidSecondary();
+
+            if (voidThisSecondary && isSecondary) {
+                // Secondary output is voided!
+                if (requireEnergy && energyPerDrop > 0) {
+                    energyService.extractAEPower(energyPerDrop, Actionable.MODULATE, PowerMultiplier.CONFIG);
+                }
                 continue;
             }
 
@@ -118,8 +197,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
             // Test if the cell has space to accept this item
             long canInsert = mineCell.injectGeneratedDrop(key, dropStack.getCount(), Actionable.SIMULATE);
             if (canInsert <= 0) {
-                // Cell is full or cannot accept this drop, stop immediately
-                break;
+                continue;
             }
 
             // Only consume AE power if the item actually fits into the cell

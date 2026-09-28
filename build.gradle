@@ -38,11 +38,17 @@ repositories {
         name = "Modrinth"
         url = uri("https://api.modrinth.com/maven")
     }
+    maven {
+        name = "Jared's maven"
+        url = uri("https://maven.blamejared.com/")
+    }
 }
 
 dependencies {
     implementation "maven.modrinth:ae2:${project.ae2_version}"
     implementation "maven.modrinth:guideme:26.1.12-beta"
+    compileOnly "mezz.jei:jei-26.1.2-neoforge-api:${project.jei_version}"
+    runtimeOnly "mezz.jei:jei-26.1.2-neoforge:${project.jei_version}"
 }
 
 neoForge {

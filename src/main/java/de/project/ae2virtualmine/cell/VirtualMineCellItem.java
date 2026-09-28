@@ -142,29 +142,79 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
         int intervalTicks = VirtualMineConfig.BASE_TICK_INTERVAL.get();
         double seconds = intervalTicks / 20.0;
 
-        lines.accept(Component.translatable("tooltip.ae2virtualmine.tier", tier.getTierName())
-                .withStyle(ChatFormatting.GOLD));
-        lines.accept(Component.translatable("tooltip.ae2virtualmine.production", drops, String.format(Locale.ROOT, "%.1f", seconds))
-                .withStyle(ChatFormatting.GRAY));
-
-        List<GenericStack> config = stack.get(AEComponents.STORAGE_CELL_CONFIG_INV);
-        Item configuredItem = null;
-        if (config != null && !config.isEmpty()) {
-            for (GenericStack entry : config) {
-                if (entry != null && entry.what() instanceof AEItemKey itemKey) {
-                    configuredItem = itemKey.getItem();
-                    break;
-                }
-            }
+        var upgrades = UpgradeInventories.forItem(stack, 4);
+        int speedCards = Math.min(4, upgrades.getInstalledUpgrades(appeng.core.definitions.AEItems.SPEED_CARD.asItem()));
+        if (speedCards > 0) {
+            double factor = switch (speedCards) {
+                case 1 -> 0.70;
+                case 2 -> 0.45;
+                case 3 -> 0.30;
+                case 4 -> 0.20;
+                default -> 1.0;
+            };
+            seconds = (intervalTicks * factor) / 20.0;
         }
 
-        if (configuredItem != null) {
-            lines.accept(Component.translatable("tooltip.ae2virtualmine.configured_target",
-                            Component.translatable(configuredItem.getDescriptionId()))
-                    .withStyle(ChatFormatting.YELLOW));
+        lines.accept(Component.translatable("tooltip.ae2virtualmine.tier", tier.getTierName())
+                .withStyle(ChatFormatting.GOLD));
+
+        if (speedCards > 0) {
+            lines.accept(Component.translatable("tooltip.ae2virtualmine.production_speed", drops, String.format(Locale.ROOT, "%.1f", seconds), speedCards)
+                    .withStyle(ChatFormatting.AQUA));
         } else {
-            lines.accept(Component.translatable("tooltip.ae2virtualmine.not_configured")
-                    .withStyle(ChatFormatting.DARK_GRAY));
+            lines.accept(Component.translatable("tooltip.ae2virtualmine.production", drops, String.format(Locale.ROOT, "%.1f", seconds))
+                    .withStyle(ChatFormatting.GRAY));
+        }
+
+        boolean hasVoidSecondary = upgrades.isInstalled(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get())
+                || upgrades.isInstalled(appeng.core.definitions.AEItems.VOID_CARD.asItem());
+        if (hasVoidSecondary) {
+            lines.accept(Component.translatable("tooltip.ae2virtualmine.void_secondary_active")
+                    .withStyle(ChatFormatting.DARK_PURPLE));
+        }
+
+        if (stack.has(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get())) {
+            var partitionList = stack.get(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
+            if (partitionList != null && !partitionList.isEmpty()) {
+                lines.accept(Component.translatable("tooltip.ae2virtualmine.partitions_header", partitionList.size())
+                        .withStyle(ChatFormatting.AQUA));
+                for (var p : partitionList.partitions()) {
+                    var line = Component.literal(" ▪ ")
+                            .append(Component.translatable(p.target().getDescriptionId()).withStyle(ChatFormatting.YELLOW))
+                            .append(Component.literal(" (" + p.percent() + "%)").withStyle(ChatFormatting.GRAY));
+                    if (p.voidSecondary()) {
+                        line.append(Component.literal(" [Void]").withStyle(ChatFormatting.DARK_PURPLE));
+                    }
+                    lines.accept(line);
+                }
+                if (partitionList.getUnallocatedPercent() > 0) {
+                    lines.accept(Component.literal(" ▪ Unallocated: " + partitionList.getUnallocatedPercent() + "%")
+                            .withStyle(ChatFormatting.DARK_GRAY));
+                }
+            } else {
+                lines.accept(Component.translatable("tooltip.ae2virtualmine.not_configured")
+                        .withStyle(ChatFormatting.DARK_GRAY));
+            }
+        } else {
+            List<GenericStack> config = stack.get(AEComponents.STORAGE_CELL_CONFIG_INV);
+            Item configuredItem = null;
+            if (config != null && !config.isEmpty()) {
+                for (GenericStack entry : config) {
+                    if (entry != null && entry.what() instanceof AEItemKey itemKey) {
+                        configuredItem = itemKey.getItem();
+                        break;
+                    }
+                }
+            }
+
+            if (configuredItem != null) {
+                lines.accept(Component.translatable("tooltip.ae2virtualmine.configured_target",
+                                Component.translatable(configuredItem.getDescriptionId()))
+                        .withStyle(ChatFormatting.YELLOW));
+            } else {
+                lines.accept(Component.translatable("tooltip.ae2virtualmine.not_configured")
+                        .withStyle(ChatFormatting.DARK_GRAY));
+            }
         }
     }
 
