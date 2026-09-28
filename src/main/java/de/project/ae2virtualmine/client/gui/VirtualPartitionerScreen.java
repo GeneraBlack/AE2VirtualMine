@@ -71,14 +71,14 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
     protected void containerTick() {
         super.containerTick();
         ItemStack currentCell = menu.getSlot(0).getItem();
-        if (!ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(currentCell.get(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get()), lastCellStack.get(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get()))) {
+        if (!ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(VirtualCellAdapter.readPartitions(currentCell), VirtualCellAdapter.readPartitions(lastCellStack))) {
             syncFromCell(false);
         }
     }
 
     private void syncFromCell(boolean force) {
         ItemStack currentCell = menu.getSlot(0).getItem();
-        if (force || !ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(currentCell.get(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get()), lastCellStack.get(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get()))) {
+        if (force || !ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(VirtualCellAdapter.readPartitions(currentCell), VirtualCellAdapter.readPartitions(lastCellStack))) {
             lastCellStack = currentCell.copy();
             workingList.clear();
             selectedRowForPicker = -1;
