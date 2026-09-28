@@ -393,10 +393,10 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
             if (mouseX >= tableX + 10 && mouseX <= tableX + 27 && mouseY >= rowY && mouseY <= rowY + 17) {
                 if (p.target != null) {
                     List<Component> tooltip = new ArrayList<>(getTooltipFromContainerItem(new ItemStack(p.target)));
-                    tooltip.add(Component.literal("Click to change target ore").withStyle(ChatFormatting.YELLOW));
+                    tooltip.add(Component.literal("Drop an ore here or click to pick").withStyle(ChatFormatting.YELLOW));
                     extractor.setComponentTooltipForNextFrame(font, tooltip, mouseX, mouseY);
                 } else {
-                    extractor.setTooltipForNextFrame(font, Component.literal("Click to pick target from inventory"), mouseX, mouseY);
+                    extractor.setTooltipForNextFrame(font, Component.literal("Drop an ore here or click to pick from inventory"), mouseX, mouseY);
                 }
             }
             // Void button hover
@@ -484,8 +484,21 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
             PartitionDraft p = workingList.get(index);
             int rowY = tableY + 14 + i * 20;
 
-            // Target box click
+            // Target box click — supports drag-and-drop (cursor item) and picker mode
             if (mouseX >= tableX + 10 && mouseX <= tableX + 27 && mouseY >= rowY && mouseY <= rowY + 17) {
+                // Check if player is carrying an item on cursor (drag-and-drop)
+                ItemStack carried = menu.getCarried();
+                if (!carried.isEmpty()) {
+                    Item carriedItem = carried.getItem();
+                    if (MineDropRegistry.isValidMiningTarget(carriedItem, minecraft != null ? minecraft.level : null)) {
+                        playClickSound();
+                        p.target = carriedItem;
+                        selectedRowForPicker = -1;
+                        dirty = true;
+                        return true;
+                    }
+                }
+                // Otherwise toggle picker mode (click inventory slot to select)
                 playClickSound();
                 if (selectedRowForPicker == index) {
                     selectedRowForPicker = -1;
@@ -587,7 +600,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
                 }
             }
         }
-        return Items.IRON_ORE;
+        return null; // No default — partition starts as "undefined", user must select a target
     }
 
     private void applyPartitionsToServer() {
