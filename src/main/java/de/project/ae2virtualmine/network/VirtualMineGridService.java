@@ -175,7 +175,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
             // Check if this drop is a secondary byproduct
             boolean isSecondary = rolled.entryIndex() > 0;
 
-            boolean voidThisSecondary = globalVoidSecondary || selectedPartition.voidSecondary();
+            boolean voidThisSecondary = globalVoidSecondary && selectedPartition.voidSecondary();
 
             if (voidThisSecondary && isSecondary) {
                 // Secondary output is voided!

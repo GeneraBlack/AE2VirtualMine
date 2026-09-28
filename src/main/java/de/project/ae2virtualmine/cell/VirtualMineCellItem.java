@@ -112,6 +112,7 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
 
         public void save() {
             stack.set(AEComponents.STORAGE_CELL_CONFIG_INV, inv.toList());
+            stack.remove(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
         }
     }
 
@@ -277,6 +278,7 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
                     if (!level.isClientSide()) {
                         AEItemKey key = AEItemKey.of(otherStack.getItem());
                         stack.set(AEComponents.STORAGE_CELL_CONFIG_INV, List.of(new GenericStack(key, 1)));
+                        stack.remove(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
                         player.sendOverlayMessage(Component.translatable("message.ae2virtualmine.configured",
                                 Component.translatable(otherStack.getItem().getDescriptionId())).withStyle(ChatFormatting.GOLD));
                     }

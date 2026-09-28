@@ -242,25 +242,42 @@ public class VirtualMineCellInventory implements IVirtualMineCell {
             return 0;
         }
 
-        Item configuredTarget = getConfiguredTarget();
-        if (configuredTarget == null) {
-            return 0;
-        }
-
         if (!(what instanceof AEItemKey itemKey)) {
             return 0;
         }
 
         Item item = itemKey.getItem();
         boolean allowed = false;
-        if (item.equals(configuredTarget)) {
-            allowed = true;
-        } else {
-            List<MineDropEntry> drops = MineDropRegistry.getDropEntries(configuredTarget, null);
-            for (MineDropEntry entry : drops) {
-                if (entry.item().is(item)) {
+
+        var partitions = getPartitions();
+        if (!partitions.isEmpty()) {
+            for (var p : partitions.partitions()) {
+                if (item.equals(p.target())) {
                     allowed = true;
                     break;
+                }
+                List<de.project.ae2virtualmine.recipe.MineDropEntry> drops = de.project.ae2virtualmine.recipe.MineDropRegistry.getDropEntries(p.target(), null);
+                for (de.project.ae2virtualmine.recipe.MineDropEntry entry : drops) {
+                    if (entry.item().is(item)) {
+                        allowed = true;
+                        break;
+                    }
+                }
+                if (allowed) break;
+            }
+        } else {
+            Item configuredTarget = getConfiguredTarget();
+            if (configuredTarget != null) {
+                if (item.equals(configuredTarget)) {
+                    allowed = true;
+                } else {
+                    List<de.project.ae2virtualmine.recipe.MineDropEntry> drops = de.project.ae2virtualmine.recipe.MineDropRegistry.getDropEntries(configuredTarget, null);
+                    for (de.project.ae2virtualmine.recipe.MineDropEntry entry : drops) {
+                        if (entry.item().is(item)) {
+                            allowed = true;
+                            break;
+                        }
+                    }
                 }
             }
         }
