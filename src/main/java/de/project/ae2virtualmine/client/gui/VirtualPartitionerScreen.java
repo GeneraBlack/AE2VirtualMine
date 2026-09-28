@@ -55,8 +55,8 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
     private int scrollOffset = 0;
 
     public VirtualPartitionerScreen(VirtualPartitionerMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 220, 240);
-        this.inventoryLabelY = 147;
+        super(menu, playerInventory, title, 220, 262);
+        this.inventoryLabelY = 169;
         this.inventoryLabelX = 30;
     }
 
@@ -133,18 +133,23 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         // Cell slot background (x=16, y=20)
         drawSlotBox(extractor, x + 15, y + 19);
 
+        extractor.textRenderer().accept(x + 40, y + 10, Component.literal("Upgrades").withColor(0xFF888888));
+        for (int i = 0; i < 4; i++) {
+            drawSlotBox(extractor, x + 40 + i * 18 - 1, y + 19);
+        }
+
         // Drive Info Header
         ItemStack cell = menu.getSlot(0).getItem();
         if (!cell.isEmpty() && cell.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem virtualCell) {
             String tierName = virtualCell.getTier().getTierName() + " Virtual Drive";
-            extractor.textRenderer().accept(x + 38, y + 21, Component.literal(tierName).withColor(0xFF55FF55));
+            extractor.textRenderer().accept(x + 115, y + 21, Component.literal(tierName).withColor(0xFF55FF55));
 
             long totalBytes = virtualCell.getTier().getTotalBytes();
             String stats = String.format("Capacity: %,d B | Allocated: %d%%", totalBytes, getTotalPercent());
-            extractor.textRenderer().accept(x + 38, y + 30, Component.literal(stats).withColor(0xFFAAAAAA));
+            extractor.textRenderer().accept(x + 115, y + 30, Component.literal(stats).withColor(0xFFAAAAAA));
         } else {
-            extractor.textRenderer().accept(x + 38, y + 21, Component.literal("No Drive Connected").withColor(0xFFFF5555));
-            extractor.textRenderer().accept(x + 38, y + 30, Component.literal("Insert a Virtual Cell below").withColor(0xFF777777));
+            extractor.textRenderer().accept(x + 115, y + 21, Component.literal("No Drive Connected").withColor(0xFFFF5555));
+            extractor.textRenderer().accept(x + 115, y + 30, Component.literal("Insert a Virtual Cell below").withColor(0xFF777777));
         }
 
         // GParted Disk Visual Bar (x=12, y=42, w=196, h=14)
@@ -250,8 +255,9 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
                 drawButton(extractor, tableX + 122, rowY + 3, 11, 11, "+", 0xFFE0E0E0);
 
                 // [Void] toggle button (x = tableX + 138)
-                int voidBg = p.voidSecondary ? 0xFF6A0DAD : 0xFF2C2C2C;
-                int voidText = p.voidSecondary ? 0xFFFFFFFF : 0xFF777777;
+                boolean canVoid = hasVoidCard(cell);
+                int voidBg = canVoid ? (p.voidSecondary ? 0xFF6A0DAD : 0xFF2C2C2C) : 0xFF1A1A1A;
+                int voidText = canVoid ? (p.voidSecondary ? 0xFFFFFFFF : 0xFF777777) : 0xFF444444;
                 drawButtonWithCustomBg(extractor, tableX + 138, rowY + 3, 26, 11, "Void", voidText, voidBg);
 
                 // [X] delete button (x = tableX + 172)
@@ -282,9 +288,23 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         int applyText = dirty ? 0xFF55FF55 : (hasCell ? 0xFFCCCCCC : 0xFF666666);
         drawButtonWithCustomBg(extractor, x + 138, btnY, 70, 14, dirty ? "Apply *" : "Apply", applyText, applyBg);
 
+        // Upgrade Slots Row (y=155)
+        extractor.textRenderer().accept(TextAlignment.LEFT, x + 12, y + 157,
+                Component.literal("Upgrades:").withColor(0xFF888888));
+        for (int i = 0; i < 4; i++) {
+            int slotX = x + 79 + i * 18;
+            int slotY = y + 154;
+            if (hasCell) {
+                drawSlotBox(extractor, slotX, slotY);
+            } else {
+                extractor.fill(slotX, slotY, slotX + 18, slotY + 18, 0xFF1A1A1A);
+                extractor.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF111111);
+            }
+        }
+
         // Player Inventory slots
         int invStartX = x + 30;
-        int invStartY = y + 158;
+        int invStartY = y + 180;
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
                 drawSlotBox(extractor, invStartX + col * 18 - 1, invStartY + row * 18 - 1);
@@ -292,7 +312,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         }
 
         // Hotbar slots
-        int hotbarStartY = y + 216;
+        int hotbarStartY = y + 238;
         for (int col = 0; col < 9; ++col) {
             drawSlotBox(extractor, invStartX + col * 18 - 1, hotbarStartY - 1);
         }
@@ -401,7 +421,11 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
             }
             // Void button hover
             if (mouseX >= tableX + 138 && mouseX <= tableX + 164 && mouseY >= rowY + 3 && mouseY <= rowY + 14) {
-                extractor.setTooltipForNextFrame(font, Component.literal("Toggle voiding byproduct ores (Cobble, Gravel, etc.)"), mouseX, mouseY);
+                if (hasVoidCard(menu.getSlot(0).getItem())) {
+                    extractor.setTooltipForNextFrame(font, Component.literal("Toggle voiding byproduct ores (Cobble, Gravel, etc.)"), mouseX, mouseY);
+                } else {
+                    extractor.setTooltipForNextFrame(font, Component.literal("Requires Void Secondary Card").withStyle(net.minecraft.ChatFormatting.RED), mouseX, mouseY);
+                }
             }
         }
     }
@@ -532,9 +556,11 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
             // [Void] toggle
             if (mouseX >= tableX + 138 && mouseX <= tableX + 164 && mouseY >= rowY + 3 && mouseY <= rowY + 14) {
-                playClickSound();
-                p.voidSecondary = !p.voidSecondary;
-                dirty = true;
+                if (hasVoidCard(cell)) {
+                    playClickSound();
+                    p.voidSecondary = !p.voidSecondary;
+                    dirty = true;
+                }
                 return true;
             }
 
@@ -580,6 +606,14 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         return super.mouseClicked(event, wasHandled);
     }
 
+    private boolean hasVoidCard(ItemStack cell) {
+        if (cell.isEmpty()) return false;
+        var upgrades = appeng.api.upgrades.UpgradeInventories.forItem(cell, 4);
+        if (upgrades == null) return false;
+        return upgrades.isInstalled(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get()) 
+            || upgrades.isInstalled(appeng.core.definitions.AEItems.VOID_CARD.asItem());
+    }
+
     private Item findFirstUnusedInventoryTarget() {
         if (minecraft != null && minecraft.player != null) {
             Inventory inv = minecraft.player.getInventory();
@@ -620,6 +654,11 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         }
     }
 }
+
+
+
+
+
 
 
 
