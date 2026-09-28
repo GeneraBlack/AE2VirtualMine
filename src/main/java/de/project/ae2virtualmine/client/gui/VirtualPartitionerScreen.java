@@ -56,8 +56,8 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
     public VirtualPartitionerScreen(VirtualPartitionerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 220;
-        this.imageHeight = 240;
-        this.inventoryLabelY = 147;
+        this.imageHeight = 262;
+        this.inventoryLabelY = 169;
         this.inventoryLabelX = 30;
     }
 
@@ -106,6 +106,16 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
     private int getUnallocatedPercent() {
         return Math.max(0, 100 - getTotalPercent());
+    }
+
+    private boolean hasVoidCard() {
+        ItemStack cell = menu.getSlot(0).getItem();
+        if (!cell.isEmpty()) {
+            var upgrades = appeng.api.upgrades.UpgradeInventories.forItem(cell, 4);
+            return upgrades != null && (upgrades.isInstalled(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get())
+                || upgrades.isInstalled(appeng.core.definitions.AEItems.VOID_CARD.asItem()));
+        }
+        return false;
     }
 
     @Override
@@ -248,8 +258,15 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
                 drawButton(guiGraphics, tableX + 122, rowY + 3, 11, 11, "+", 0xFFE0E0E0);
 
                 // [Void] toggle button (x = tableX + 138)
-                int voidBg = p.voidSecondary ? 0xFF6A0DAD : 0xFF2C2C2C;
-                int voidText = p.voidSecondary ? 0xFFFFFFFF : 0xFF777777;
+                int voidBg;
+                int voidText;
+                if (!hasVoidCard()) {
+                    voidBg = 0xFF1A1A1A;
+                    voidText = 0xFF444444;
+                } else {
+                    voidBg = p.voidSecondary ? 0xFF6A0DAD : 0xFF2C2C2C;
+                    voidText = p.voidSecondary ? 0xFFFFFFFF : 0xFF777777;
+                }
                 drawButtonWithCustomBg(guiGraphics, tableX + 138, rowY + 3, 26, 11, "Void", voidText, voidBg);
 
                 // [X] delete button (x = tableX + 172)
@@ -280,9 +297,23 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         int applyText = dirty ? 0xFF55FF55 : (hasCell ? 0xFFCCCCCC : 0xFF666666);
         drawButtonWithCustomBg(guiGraphics, x + 138, btnY, 70, 14, dirty ? "Apply *" : "Apply", applyText, applyBg);
 
+        // Upgrade Slots Row (y=155)
+        guiGraphics.drawString(font, "Upgrades:", x + 12, y + 157, 0xFF888888, false);
+        for (int i = 0; i < 4; i++) {
+            int slotX = x + 79 + i * 18;
+            int slotY = y + 154;
+            if (hasCell) {
+                drawSlotBox(guiGraphics, slotX, slotY);
+            } else {
+                // Disabled slot appearance
+                guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, 0xFF1A1A1A);
+                guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF111111);
+            }
+        }
+
         // Player Inventory slots
         int invStartX = x + 30;
-        int invStartY = y + 158;
+        int invStartY = y + 180;
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
                 drawSlotBox(guiGraphics, invStartX + col * 18 - 1, invStartY + row * 18 - 1);
@@ -290,7 +321,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         }
 
         // Hotbar slots
-        int hotbarStartY = y + 216;
+        int hotbarStartY = y + 238;
         for (int col = 0; col < 9; ++col) {
             drawSlotBox(guiGraphics, invStartX + col * 18 - 1, hotbarStartY - 1);
         }
@@ -397,7 +428,11 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
             }
             // Void button hover
             if (mouseX >= tableX + 138 && mouseX <= tableX + 164 && mouseY >= rowY + 3 && mouseY <= rowY + 14) {
-                guiGraphics.renderTooltip(font, Component.literal("Toggle voiding byproduct ores (Cobble, Gravel, etc.)"), mouseX, mouseY);
+                if (!hasVoidCard()) {
+                    guiGraphics.renderTooltip(font, Component.literal("Requires Void Secondary Card").withStyle(ChatFormatting.RED), mouseX, mouseY);
+                } else {
+                    guiGraphics.renderTooltip(font, Component.literal("Toggle voiding byproduct ores (Cobble, Gravel, etc.)"), mouseX, mouseY);
+                }
             }
         }
     }
@@ -508,9 +543,11 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
             // [Void] toggle
             if (mouseX >= tableX + 138 && mouseX <= tableX + 164 && mouseY >= rowY + 3 && mouseY <= rowY + 14) {
-                playClickSound();
-                p.voidSecondary = !p.voidSecondary;
-                dirty = true;
+                if (hasVoidCard()) {
+                    playClickSound();
+                    p.voidSecondary = !p.voidSecondary;
+                    dirty = true;
+                }
                 return true;
             }
 

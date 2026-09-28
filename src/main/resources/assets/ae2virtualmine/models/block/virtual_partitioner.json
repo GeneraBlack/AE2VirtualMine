@@ -1,9 +1,9 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "minecraft:block/orientable_with_bottom",
   "textures": {
-    "top": "minecraft:block/smithing_table_top",
-    "front": "minecraft:block/smithing_table_front",
-    "side": "minecraft:block/iron_block",
-    "bottom": "minecraft:block/smooth_stone"
+    "top": "ae2virtualmine:block/virtual_partitioner_top",
+    "front": "ae2virtualmine:block/virtual_partitioner_front",
+    "side": "ae2virtualmine:block/virtual_partitioner_side",
+    "bottom": "ae2virtualmine:block/virtual_partitioner_bottom"
   }
 }
