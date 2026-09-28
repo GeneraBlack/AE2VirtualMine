@@ -242,26 +242,29 @@ public class VirtualMineCellInventory implements IVirtualMineCell {
             return 0;
         }
 
-        Item configuredTarget = getConfiguredTarget();
-        if (configuredTarget == null) {
-            return 0;
-        }
-
         if (!(what instanceof AEItemKey itemKey)) {
             return 0;
         }
 
         Item item = itemKey.getItem();
         boolean allowed = false;
-        if (item.equals(configuredTarget)) {
-            allowed = true;
-        } else {
-            List<MineDropEntry> drops = MineDropRegistry.getDropEntries(configuredTarget, null);
+
+        de.project.ae2virtualmine.cell.partition.MineCellPartitionList partitions = getPartitions();
+        for (de.project.ae2virtualmine.cell.partition.MineCellPartition p : partitions.partitions()) {
+            Item target = p.target();
+            if (item.equals(target)) {
+                allowed = true;
+                break;
+            }
+            List<MineDropEntry> drops = MineDropRegistry.getDropEntries(target, null);
             for (MineDropEntry entry : drops) {
                 if (entry.item().is(item)) {
                     allowed = true;
                     break;
                 }
+            }
+            if (allowed) {
+                break;
             }
         }
 

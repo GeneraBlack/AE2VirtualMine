@@ -19,7 +19,6 @@ import de.project.ae2virtualmine.cell.partition.MineCellPartitionList;
 import de.project.ae2virtualmine.config.VirtualMineConfig;
 import de.project.ae2virtualmine.recipe.MineDropEntry;
 import de.project.ae2virtualmine.recipe.MineDropRegistry;
-import de.project.ae2virtualmine.registry.ModItems;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -174,7 +173,7 @@ public class VirtualMineGridService implements IGridServiceProvider, IVirtualMin
                 continue;
             }
 
-            boolean voidThisSecondary = globalVoidSecondary || selectedPartition.voidSecondary();
+            boolean voidThisSecondary = globalVoidSecondary && selectedPartition.voidSecondary();
 
             // A drop is secondary if its entry index > 0 (not the primary drop)
             if (voidThisSecondary && rolledDrop.isSecondary()) {

@@ -111,6 +111,8 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
 
         public void save() {
             stack.set(AEComponents.STORAGE_CELL_CONFIG_INV, inv.toList());
+        
+            stack.remove(de.project.ae2virtualmine.registry.ModDataComponents.PARTITIONS.get());
         }
     }
 

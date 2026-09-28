@@ -115,20 +115,20 @@ public final class VirtualCellAdapter {
     public static long getCellTotalBytes(ItemStack cell) {
         if (cell.isEmpty()) return 0;
         String path = BuiltInRegistries.ITEM.getKey(cell.getItem()).getPath();
-        if (path.startsWith("256k")) return 262144;
-        if (path.startsWith("64k")) return 65536;
-        if (path.startsWith("16k")) return 16384;
-        if (path.startsWith("4k")) return 4096;
+        if (path.contains("256k")) return 262144;
+        if (path.contains("64k")) return 65536;
+        if (path.contains("16k")) return 16384;
+        if (path.contains("4k")) return 4096;
         return 1024;
     }
 
     public static String getCellTierName(ItemStack cell) {
         if (cell.isEmpty()) return "";
         String path = BuiltInRegistries.ITEM.getKey(cell.getItem()).getPath();
-        if (path.startsWith("256k")) return "256k";
-        if (path.startsWith("64k")) return "64k";
-        if (path.startsWith("16k")) return "16k";
-        if (path.startsWith("4k")) return "4k";
+        if (path.contains("256k")) return "256k";
+        if (path.contains("64k")) return "64k";
+        if (path.contains("16k")) return "16k";
+        if (path.contains("4k")) return "4k";
         return "1k";
     }
 

@@ -71,7 +71,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
     protected void containerTick() {
         super.containerTick();
         ItemStack currentCell = menu.getSlot(0).getItem();
-        if (!ItemStack.matches(currentCell, lastCellStack)) {
+        if (!ItemStack.isSameItemSameComponents(currentCell, lastCellStack)) {
             syncFromCell(false);
         }
     }
