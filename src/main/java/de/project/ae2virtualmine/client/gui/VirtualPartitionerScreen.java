@@ -111,7 +111,8 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
     private boolean hasVoidCard() {
         ItemStack cell = menu.getSlot(0).getItem();
         if (!cell.isEmpty()) {
-            var upgrades = appeng.api.upgrades.UpgradeInventories.forItem(cell, 4);
+            if (menu.getSlot(5).hasItem()) return true;
+            var upgrades = appeng.api.upgrades.UpgradeInventories.forItem(cell, 5);
             return upgrades != null && (upgrades.isInstalled(de.project.ae2virtualmine.registry.ModItems.VOID_SECONDARY_CARD.get())
                 || upgrades.isInstalled(appeng.core.definitions.AEItems.VOID_CARD.asItem()));
         }
@@ -298,17 +299,26 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
         drawButtonWithCustomBg(guiGraphics, x + 138, btnY, 70, 14, dirty ? "Apply *" : "Apply", applyText, applyBg);
 
         // Upgrade Slots Row (y=155)
-        guiGraphics.drawString(font, "Upgrades:", x + 12, y + 157, 0xFF888888, false);
+        guiGraphics.drawString(font, "Upgrades:", x + 10, y + 158, 0xFF888888, false);
+        // 4 Acceleration card slots (x = 52 + i * 18)
         for (int i = 0; i < 4; i++) {
-            int slotX = x + 79 + i * 18;
+            int slotX = x + 51 + i * 18;
             int slotY = y + 154;
             if (hasCell) {
                 drawSlotBox(guiGraphics, slotX, slotY);
             } else {
-                // Disabled slot appearance
                 guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, 0xFF1A1A1A);
                 guiGraphics.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF111111);
             }
+        }
+        // 1 Void Secondary card slot (x = 138)
+        int voidSlotX = x + 137;
+        int voidSlotY = y + 154;
+        if (hasCell) {
+            drawVoidSlotBox(guiGraphics, voidSlotX, voidSlotY);
+        } else {
+            guiGraphics.fill(voidSlotX, voidSlotY, voidSlotX + 18, voidSlotY + 18, 0xFF1A1A1A);
+            guiGraphics.fill(voidSlotX + 1, voidSlotY + 1, voidSlotX + 17, voidSlotY + 17, 0xFF111111);
         }
 
         // Player Inventory slots
@@ -329,6 +339,15 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
     private void drawSlotBox(GuiGraphics guiGraphics, int sx, int sy) {
         guiGraphics.fill(sx, sy, sx + 18, sy + 18, 0xFF373737);
+        guiGraphics.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF8B8B8B);
+        guiGraphics.fill(sx + 1, sy + 1, sx + 16, sy + 16, 0xFF373737);
+        guiGraphics.fill(sx + 1, sy + 1, sx + 17, sy + 2, 0xFF373737);
+        guiGraphics.fill(sx + 1, sy + 1, sx + 2, sy + 17, 0xFF373737);
+        guiGraphics.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF1A1A1A);
+    }
+
+    private void drawVoidSlotBox(GuiGraphics guiGraphics, int sx, int sy) {
+        guiGraphics.fill(sx, sy, sx + 18, sy + 18, 0xFF5A189A); // Subtle purple highlight
         guiGraphics.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF8B8B8B);
         guiGraphics.fill(sx + 1, sy + 1, sx + 16, sy + 16, 0xFF373737);
         guiGraphics.fill(sx + 1, sy + 1, sx + 17, sy + 2, 0xFF373737);
@@ -433,6 +452,24 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
                 } else {
                     guiGraphics.renderTooltip(font, Component.literal("Toggle voiding byproduct ores (Cobble, Gravel, etc.)"), mouseX, mouseY);
                 }
+            }
+        }
+
+        // Empty Upgrade slot tooltips
+        for (int i = 0; i < 4; i++) {
+            int slotX = x + 51 + i * 18;
+            int slotY = y + 154;
+            if (mouseX >= slotX && mouseX <= slotX + 18 && mouseY >= slotY && mouseY <= slotY + 18) {
+                if (!menu.getSlot(1 + i).hasItem()) {
+                    guiGraphics.renderTooltip(font, Component.literal("Acceleration Card (" + (i + 1) + "/4)").withStyle(ChatFormatting.GRAY), mouseX, mouseY);
+                }
+            }
+        }
+        int voidSlotX = x + 137;
+        int voidSlotY = y + 154;
+        if (mouseX >= voidSlotX && mouseX <= voidSlotX + 18 && mouseY >= voidSlotY && mouseY <= voidSlotY + 18) {
+            if (!menu.getSlot(5).hasItem()) {
+                guiGraphics.renderTooltip(font, Component.literal("Void Secondary Card").withStyle(ChatFormatting.LIGHT_PURPLE), mouseX, mouseY);
             }
         }
     }

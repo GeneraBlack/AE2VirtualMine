@@ -63,7 +63,7 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
 
     @Override
     public IUpgradeInventory getUpgrades(ItemStack stack) {
-        return UpgradeInventories.forItem(stack, 4);
+        return UpgradeInventories.forItem(stack, 5);
     }
 
     @Override
@@ -141,7 +141,7 @@ public class VirtualMineCellItem extends Item implements ICellWorkbenchItem {
         int intervalTicks = VirtualMineConfig.BASE_TICK_INTERVAL.get();
         double seconds = intervalTicks / 20.0;
 
-        var upgrades = UpgradeInventories.forItem(stack, 4);
+        var upgrades = UpgradeInventories.forItem(stack, 5);
         int speedCards = Math.min(4, upgrades.getInstalledUpgrades(appeng.core.definitions.AEItems.SPEED_CARD.asItem()));
         if (speedCards > 0) {
             double factor = switch (speedCards) {
