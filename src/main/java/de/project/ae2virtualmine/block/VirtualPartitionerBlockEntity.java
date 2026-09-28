@@ -1,5 +1,7 @@
 package de.project.ae2virtualmine.block;
 
+import de.project.ae2virtualmine.util.VirtualCellAdapter;
+
 import de.project.ae2virtualmine.cell.IVirtualMineCell;
 import de.project.ae2virtualmine.menu.VirtualPartitionerMenu;
 import de.project.ae2virtualmine.registry.ModBlockEntities;
@@ -110,7 +112,7 @@ public class VirtualPartitionerBlockEntity extends BlockEntity implements MenuPr
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return slot == 0 && stack.getItem() instanceof de.project.ae2virtualmine.cell.VirtualMineCellItem;
+        return slot == 0 && VirtualCellAdapter.isVirtualStorageCell(stack);
     }
 }
 
