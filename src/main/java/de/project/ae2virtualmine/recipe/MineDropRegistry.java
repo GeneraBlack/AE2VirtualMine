@@ -35,9 +35,15 @@ public class MineDropRegistry {
     private static final TagKey<Item> C_DUSTS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "dusts"));
     private static final TagKey<Item> C_STONES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "stones"));
 
-    static {
+    private static volatile boolean initialized = false;
+
+    public static void ensureInitialized() {
+        if (!initialized) {
+            initialized = true;
         registerOreDefaults();
         registerStoneDefaults();
+    
+        }
     }
 
     private static void registerOreDefaults() {
@@ -240,6 +246,7 @@ public class MineDropRegistry {
     }
 
     public static boolean isValidMiningTarget(Item item, @Nullable Level level) {
+        ensureInitialized();
         // 1. Datapack custom recipes always have top priority
         if (level != null && level.getServer() != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(item));
@@ -274,10 +281,12 @@ public class MineDropRegistry {
     }
 
     public static List<MineDropEntry> getDropEntries(Item target, Level level) {
+        ensureInitialized();
         return getDropEntries(target, level, null);
     }
 
     public static List<MineDropEntry> getDropEntries(Item target, @Nullable Level level, @Nullable MineCellTier tier) {
+        ensureInitialized();
         // 1. Datapack custom recipes have TOP PRIORITY - custom configs overwrite hardcoded defaults
         if (level != null && level.getServer() != null) {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(target));
