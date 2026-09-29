@@ -226,6 +226,7 @@ public class MineDropRegistry {
     }
 
     public static Map<Item, List<MineDropEntry>> getBuiltinDrops() {
+        ensureInitialized();
         return Collections.unmodifiableMap(BUILTIN_DROPS);
     }
 
