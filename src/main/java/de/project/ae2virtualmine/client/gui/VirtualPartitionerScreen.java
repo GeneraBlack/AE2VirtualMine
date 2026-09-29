@@ -51,6 +51,7 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
 
     private final List<PartitionDraft> workingList = new ArrayList<>();
     private ItemStack lastCellStack = ItemStack.EMPTY;
+    private List<VirtualCellAdapter.UniversalPartition> lastPartitions = List.of();
     private boolean dirty = false;
     private int selectedRowForPicker = -1;
     private int scrollOffset = 0;
@@ -71,23 +72,29 @@ public class VirtualPartitionerScreen extends AbstractContainerScreen<VirtualPar
     protected void containerTick() {
         super.containerTick();
         ItemStack currentCell = menu.getSlot(0).getItem();
-        if (!ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(VirtualCellAdapter.readPartitions(currentCell), VirtualCellAdapter.readPartitions(lastCellStack))) {
+        if (!ItemStack.isSameItem(currentCell, lastCellStack)) {
             syncFromCell(false);
+        } else if (!currentCell.isEmpty()) {
+            List<UniversalPartition> currentPartitions = VirtualCellAdapter.readPartitions(currentCell);
+            if (!java.util.Objects.equals(currentPartitions, lastPartitions)) {
+                syncFromCell(false);
+            }
         }
     }
 
     private void syncFromCell(boolean force) {
         ItemStack currentCell = menu.getSlot(0).getItem();
-        if (force || !ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(VirtualCellAdapter.readPartitions(currentCell), VirtualCellAdapter.readPartitions(lastCellStack))) {
+        List<UniversalPartition> currentPartitions = VirtualCellAdapter.readPartitions(currentCell);
+        if (force || !ItemStack.isSameItem(currentCell, lastCellStack) || !java.util.Objects.equals(currentPartitions, lastPartitions)) {
             lastCellStack = currentCell.copy();
+            lastPartitions = currentPartitions;
             workingList.clear();
             selectedRowForPicker = -1;
             scrollOffset = 0;
             dirty = false;
 
             if (!currentCell.isEmpty() && VirtualCellAdapter.isVirtualStorageCell(currentCell)) {
-                List<UniversalPartition> list = VirtualCellAdapter.readPartitions(currentCell);
-                for (UniversalPartition p : list) {
+                for (UniversalPartition p : currentPartitions) {
                     workingList.add(new PartitionDraft(p.targetId(), p.isFluid(), p.percent(), p.voidSecondary()));
                 }
             }
