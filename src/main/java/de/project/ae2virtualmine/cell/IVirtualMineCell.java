@@ -33,7 +33,7 @@ public interface IVirtualMineCell extends StorageCell {
         }
         Item single = getConfiguredTarget();
         if (single != null) {
-            return new MineCellPartitionList(List.of(new MineCellPartition(single, 100, false)));
+            return new MineCellPartitionList(List.of(new MineCellPartition(single, 100, true)));
         }
         return MineCellPartitionList.EMPTY;
     }
